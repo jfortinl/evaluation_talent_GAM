@@ -6,6 +6,729 @@
   <title>Évaluation des talents - GAM</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- Définir d'abord les fonctions JavaScript dans le head pour qu'elles soient disponibles avant que le DOM ne soit chargé -->
+  <script>
+    // Fonction pour obtenir la valeur sélectionnée d'un groupe de boutons radio
+    function getSelectedValue(name) {
+      const radios = document.getElementsByName(name);
+      for (let i = 0; i < radios.length; i++) {
+        if (radios[i].checked) {
+          return parseInt(radios[i].value);
+        }
+      }
+      return 0;
+    }
+    
+    // Fonction évaluateEmployee définie GLOBALEMENT pour être accessible par l'attribut onclick
+    function evaluateEmployee() {
+      console.log("Fonction evaluateEmployee() appelée!");
+      
+      // Calculer les moyennes pour chaque dimension
+      // Veut section
+      const audaceScore = getSelectedValue('audace');
+      const rigueurScore = getSelectedValue('rigueur');
+      const impactScore = getSelectedValue('impact');
+      const innovationScore = getSelectedValue('innovation');
+      const cohesionScore = getSelectedValue('cohesion');
+      const empathieScore = getSelectedValue('empathie');
+      const veutAvg = (audaceScore + rigueurScore + impactScore + innovationScore + cohesionScore + empathieScore) / 6;
+      
+      // Peut section
+      const qualiteScore = getSelectedValue('qualite');
+      const objectifsScore = getSelectedValue('objectifs');
+      const problemesScore = getSelectedValue('problemes');
+      const peutAvg = (qualiteScore + objectifsScore + problemesScore) / 3;
+      
+      // Capable section
+      const adaptationScore = getSelectedValue('adaptation');
+      const leadershipScore = getSelectedValue('leadership');
+      const visionScore = getSelectedValue('vision');
+      const capableAvg = (adaptationScore + leadershipScore + visionScore) / 3;
+      
+      // Obtenir le niveau et département de l'employé
+      const employeeLevel = document.getElementById('employee-level').value;
+      const employeeDept = document.getElementById('employee-department').value;
+      
+      // Récupérer les poids adaptés au rôle/département
+      const roleWeights = {
+        'junior': { veut: 0.4, peut: 0.35, capable: 0.25 },
+        'intermediate': { veut: 0.35, peut: 0.4, capable: 0.25 },
+        'senior': { veut: 0.3, peut: 0.4, capable: 0.3 },
+        'lead': { veut: 0.3, peut: 0.35, capable: 0.35 },
+        'manager': { veut: 0.35, peut: 0.3, capable: 0.35 },
+        'director': { veut: 0.35, peut: 0.25, capable: 0.4 },
+        'executive': { veut: 0.4, peut: 0.2, capable: 0.4 }
+      };
+      
+      const departmentWeights = {
+        'technology': { veut: 0.3, peut: 0.45, capable: 0.25 },
+        'marketing': { veut: 0.35, peut: 0.4, capable: 0.25 },
+        'sales': { veut: 0.45, peut: 0.4, capable: 0.15 },
+        'finance': { veut: 0.3, peut: 0.5, capable: 0.2 },
+        'hr': { veut: 0.4, peut: 0.3, capable: 0.3 },
+        'operations': { veut: 0.25, peut: 0.45, capable: 0.3 },
+        'customer-service': { veut: 0.4, peut: 0.4, capable: 0.2 },
+        'r-and-d': { veut: 0.3, peut: 0.3, capable: 0.4 }
+      };
+      
+      // Calculer les poids finaux (combinaison du rôle et du département)
+      const roleWeight = roleWeights[employeeLevel] || { veut: 0.33, peut: 0.33, capable: 0.34 };
+      const deptWeight = departmentWeights[employeeDept] || { veut: 0.33, peut: 0.33, capable: 0.34 };
+      
+      const finalWeights = {
+        veut: (roleWeight.veut + deptWeight.veut) / 2,
+        peut: (roleWeight.peut + deptWeight.peut) / 2,
+        capable: (roleWeight.capable + deptWeight.capable) / 2
+      };
+      
+      // Normaliser les poids pour qu'ils totalisent 1
+      const totalWeight = finalWeights.veut + finalWeights.peut + finalWeights.capable;
+      finalWeights.veut = finalWeights.veut / totalWeight;
+      finalWeights.peut = finalWeights.peut / totalWeight;
+      finalWeights.capable = finalWeights.capable / totalWeight;
+      
+      // Calculer le score composite pondéré
+      const compositeScore = (veutAvg * finalWeights.veut) + (peutAvg * finalWeights.peut) + (capableAvg * finalWeights.capable);
+      
+      // Afficher les scores moyens
+      document.getElementById('veut-avg').textContent = veutAvg.toFixed(1);
+      document.getElementById('peut-avg').textContent = peutAvg.toFixed(1);
+      document.getElementById('capable-avg').textContent = capableAvg.toFixed(1);
+      document.getElementById('composite-score').textContent = compositeScore.toFixed(1);
+      
+      // Mettre à jour les badges de score
+      updateScoreBadge('veut-badge', veutAvg);
+      updateScoreBadge('peut-badge', peutAvg);
+      updateScoreBadge('capable-badge', capableAvg);
+      
+      // Déterminer les interprétations
+      document.getElementById('veut-interpretation').textContent = getInterpretation('veut', veutAvg);
+      document.getElementById('peut-interpretation').textContent = getInterpretation('peut', peutAvg);
+      document.getElementById('capable-interpretation').textContent = getInterpretation('capable', capableAvg);
+      
+      // Interprétations détaillées
+      document.getElementById('veut-details').textContent = getDetailedInterpretation('veut', veutAvg, audaceScore, rigueurScore, impactScore, innovationScore, cohesionScore, empathieScore);
+      document.getElementById('peut-details').textContent = getDetailedInterpretation('peut', peutAvg, qualiteScore, objectifsScore, problemesScore);
+      document.getElementById('capable-details').textContent = getDetailedInterpretation('capable', capableAvg, adaptationScore, leadershipScore, visionScore);
+      
+      // Déterminer le type de joueur
+      const playerType = determinePlayerType(veutAvg, peutAvg, capableAvg);
+      
+      // Mise à jour de l'interface avec le type de joueur
+      document.getElementById('player-type').textContent = playerType;
+      document.getElementById('classification-description').textContent = getPlayerTypeDescription(playerType);
+      document.getElementById('player-type-rec').textContent = playerType;
+      
+      // Positionnement sur le quadrant
+      positionOnQuadrant(playerType, peutAvg, capableAvg, veutAvg);
+      
+      // Mise à jour de la recommandation
+      document.getElementById('recommendation-text').textContent = getRecommendation(playerType, employeeLevel);
+      
+      // Mise à jour des actions recommandées
+      updateActionItems(playerType, veutAvg, peutAvg, capableAvg, employeeLevel, employeeDept);
+      
+      // Simuler des données de calibration comparatives
+      updateCalibrationData(compositeScore, playerType, employeeLevel, employeeDept);
+      
+      // Vérifier si une précédente évaluation est disponible
+      if (document.getElementById('previous-evaluation').value === 'available') {
+        // Ajouter un indicateur de progression
+        addProgressionIndicator(compositeScore, 5.8); // Simuler un score précédent de 5.8
+      }
+      
+      // Montrer les résultats avec animation
+      document.getElementById('results').classList.remove('fade-in');
+      void document.getElementById('results').offsetWidth; // Forcer un reflow
+      document.getElementById('results').classList.add('fade-in');
+      document.getElementById('results').style.display = 'block';
+      
+      // Scroller vers les résultats
+      document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    // Fonction pour simuler les données de calibration
+    function updateCalibrationData(compositeScore, playerType, level, department) {
+      // Calculer un rang percentile basé sur le score composite (simulation)
+      const deptPercentile = Math.round(compositeScore * 10);
+      const globalPercentile = Math.round(compositeScore * 7 + Math.random() * 20);
+      
+      // Mettre à jour l'interface
+      document.getElementById('dept-percentile').innerHTML = `${deptPercentile}<sup>ème</sup>`;
+      document.getElementById('global-percentile').innerHTML = `${globalPercentile}<sup>ème</sup>`;
+      
+      // Déterminer la comparaison par niveau
+      let levelCompText = "";
+      if (compositeScore > 7) {
+        levelCompText = `Au-dessus de la moyenne des ${level}s`;
+      } else if (compositeScore > 5) {
+        levelCompText = `Légèrement au-dessus de la moyenne des ${level}s`;
+      } else if (compositeScore > 4) {
+        levelCompText = `Dans la moyenne des ${level}s`;
+      } else {
+        levelCompText = `En dessous de la moyenne des ${level}s`;
+      }
+      document.getElementById('level-comparison').textContent = levelCompText;
+      
+      // Positionner le marqueur de calibration
+      document.getElementById('calibration-marker').style.left = `${deptPercentile}%`;
+    }
+    
+    // Helper Functions
+    
+    function updateScoreBadge(elementId, score) {
+      const badge = document.getElementById(elementId);
+      badge.textContent = score.toFixed(1);
+      
+      // Update class based on score
+      badge.classList.remove('score-low', 'score-medium', 'score-high');
+      if (score >= 7) {
+        badge.classList.add('score-high');
+      } else if (score >= 4) {
+        badge.classList.add('score-medium');
+      } else {
+        badge.classList.add('score-low');
+      }
+    }
+    
+    function getInterpretation(category, value) {
+      if (category === 'veut') {
+        if (value >= 8) return "Très fort alignement avec les valeurs";
+        if (value >= 6) return "Bon alignement avec les valeurs";
+        if (value >= 4) return "Alignement moyen avec les valeurs";
+        return "Faible alignement avec les valeurs";
+      }
+      else if (category === 'peut') {
+        if (value >= 8) return "Performance exceptionnelle";
+        if (value >= 6) return "Bonne performance";
+        if (value >= 4) return "Performance acceptable";
+        return "Performance insuffisante";
+      }
+      else if (category === 'capable') {
+        if (value >= 8) return "Potentiel de croissance très élevé";
+        if (value >= 6) return "Bon potentiel de croissance";
+        if (value >= 4) return "Potentiel de croissance moyen";
+        return "Potentiel de croissance limité";
+      }
+      return "";
+    }
+    
+    function getDetailedInterpretation(category, avgScore, score1, score2, score3, score4, score5, score6) {
+      // Base interpretation from the average score
+      let baseInterpretation = getInterpretation(category, avgScore);
+      
+      // Additional detailed feedback based on individual scores
+      let details = "";
+      
+      if (category === 'veut') {
+        // Audace (score1)
+        if (score1 > avgScore + 2) {
+          details += " Excellente capacité à relever les défis avec enthousiasme.";
+        } else if (score1 < avgScore - 2) {
+          details += " Pourrait montrer plus d'audace face aux défis.";
+        }
+        
+        // Rigueur (score2)
+        if (score2 > avgScore + 2) {
+          details += " Excellente rigueur dans le travail.";
+        } else if (score2 < avgScore - 2) {
+          details += " La rigueur est un axe d'amélioration.";
+        }
+        
+        // Impact (score3)
+        if (score3 > avgScore + 2) {
+          details += " Crée un impact positif remarquable.";
+        } else if (score3 < avgScore - 2) {
+          details += " Pourrait renforcer l'impact de ses contributions.";
+        }
+        
+        // Innovation (score4)
+        if (score4 > avgScore + 2) {
+          details += " Recherche constante d'excellence et d'innovation.";
+        } else if (score4 < avgScore - 2) {
+          details += " Besoin de développer l'initiative d'innovation.";
+        }
+        
+        // Cohésion (score5)
+        if (score5 > avgScore + 2) {
+          details += " Excellente contribution à la cohésion d'équipe.";
+        } else if (score5 < avgScore - 2) {
+          details += " Pourrait mieux contribuer à la cohésion d'équipe.";
+        }
+        
+        // Empathie (score6)
+        if (score6 > avgScore + 2) {
+          details += " Fait preuve d'une empathie remarquable.";
+        } else if (score6 < avgScore - 2) {
+          details += " L'empathie est un axe de développement à privilégier.";
+        }
+      }
+      else if (category === 'peut') {
+        if (score1 > avgScore + 2) {
+          details += " Qualité de travail exemplaire.";
+        } else if (score1 < avgScore - 2) {
+          details += " La qualité du travail pourrait être améliorée.";
+        }
+        
+        if (score2 > avgScore + 2) {
+          details += " Atteint constamment ses objectifs.";
+        } else if (score2 < avgScore - 2) {
+          details += " L'atteinte des objectifs est à renforcer.";
+        }
+        
+        if (score3 > avgScore + 2) {
+          details += " Excellente capacité à résoudre les problèmes.";
+        } else if (score3 < avgScore - 2) {
+          details += " La résolution de problèmes est un axe de progression.";
+        }
+      }
+      else if (category === 'capable') {
+        if (score1 > avgScore + 2) {
+          details += " Capacité d'adaptation remarquable.";
+        } else if (score1 < avgScore - 2) {
+          details += " La capacité d'apprentissage pourrait être développée.";
+        }
+        
+        if (score2 > avgScore + 2) {
+          details += " Fort potentiel de leadership.";
+        } else if (score2 < avgScore - 2) {
+          details += " Les compétences de leadership sont à développer.";
+        }
+        
+        if (score3 > avgScore + 2) {
+          details += " Vision stratégique exceptionnelle.";
+        } else if (score3 < avgScore - 2) {
+          details += " La vision stratégique pourrait être élargie.";
+        }
+      }
+      
+      // If no specific details were added, provide a generic interpretation
+      if (details === "") {
+        if (category === 'veut') {
+          return `${baseInterpretation}. Démontre un niveau équilibré sur l'ensemble des valeurs de l'entreprise.`;
+        } else if (category === 'peut') {
+          return `${baseInterpretation}. Maintient un niveau cohérent de qualité, d'atteinte des objectifs et de résolution de problèmes.`;
+        } else {
+          return `${baseInterpretation}. Montre un équilibre entre capacité d'adaptation, leadership et vision stratégique.`;
+        }
+      }
+      
+      return `${baseInterpretation}.${details}`;
+    }
+    
+    function getPlayerTypeDescription(type) {
+      switch(type) {
+        case "A+": return "Talent exceptionnel";
+        case "A": return "Talent de grande valeur";
+        case "B+": return "Talent prometteur";
+        case "B": return "Talent solide";
+        case "C": return "Talent à accompagner";
+        case "D": return "Désalignement important";
+        default: return "";
+      }
+    }
+    
+    function determinePlayerType(veut, peut, capable) {
+      // Système de pondération avancé basé sur les rôles
+      const roleWeights = {
+        'junior': { veut: 0.4, peut: 0.35, capable: 0.25 },
+        'intermediate': { veut: 0.35, peut: 0.4, capable: 0.25 },
+        'senior': { veut: 0.3, peut: 0.4, capable: 0.3 },
+        'lead': { veut: 0.3, peut: 0.35, capable: 0.35 },
+        'manager': { veut: 0.35, peut: 0.3, capable: 0.35 },
+        'director': { veut: 0.35, peut: 0.25, capable: 0.4 },
+        'executive': { veut: 0.4, peut: 0.2, capable: 0.4 }
+      };
+      
+      const departmentWeights = {
+        'technology': { veut: 0.3, peut: 0.45, capable: 0.25 },
+        'marketing': { veut: 0.35, peut: 0.4, capable: 0.25 },
+        'sales': { veut: 0.45, peut: 0.4, capable: 0.15 },
+        'finance': { veut: 0.3, peut: 0.5, capable: 0.2 },
+        'hr': { veut: 0.4, peut: 0.3, capable: 0.3 },
+        'operations': { veut: 0.25, peut: 0.45, capable: 0.3 },
+        'customer-service': { veut: 0.4, peut: 0.4, capable: 0.2 },
+        'r-and-d': { veut: 0.3, peut: 0.3, capable: 0.4 }
+      };
+      
+      // Récupérer le niveau et département sélectionnés
+      const employeeLevel = document.getElementById('employee-level').value;
+      const employeeDept = document.getElementById('employee-department').value;
+      
+      // Calculer les poids finaux (combinaison du rôle et du département)
+      const roleWeight = roleWeights[employeeLevel] || { veut: 0.33, peut: 0.33, capable: 0.34 };
+      const deptWeight = departmentWeights[employeeDept] || { veut: 0.33, peut: 0.33, capable: 0.34 };
+      
+      const finalWeights = {
+        veut: (roleWeight.veut + deptWeight.veut) / 2,
+        peut: (roleWeight.peut + deptWeight.peut) / 2,
+        capable: (roleWeight.capable + deptWeight.capable) / 2
+      };
+      
+      // Normaliser les poids pour qu'ils totalisent 1
+      const totalWeight = finalWeights.veut + finalWeights.peut + finalWeights.capable;
+      finalWeights.veut = finalWeights.veut / totalWeight;
+      finalWeights.peut = finalWeights.peut / totalWeight;
+      finalWeights.capable = finalWeights.capable / totalWeight;
+      
+      // Calculer le score composite pondéré
+      const compositeScore = (veut * finalWeights.veut) + (peut * finalWeights.peut) + (capable * finalWeights.capable);
+      
+      // Vérifier l'alignement des valeurs (critère éliminatoire)
+      if (veut < 4) {
+        return "D"; // Désalignement fondamental avec les valeurs
+      }
+      
+      // Déterminer la classification de base selon le score composite
+      let classification;
+      if (compositeScore >= 8.5) {
+        classification = "A+";
+      } else if (compositeScore >= 7.5) {
+        classification = "A";
+      } else if (compositeScore >= 6.5) {
+        classification = "B+";
+      } else if (compositeScore >= 5.0) {
+        classification = "B";
+      } else if (compositeScore >= 4.0) {
+        classification = "C";
+      } else {
+        classification = "D";
+      }
+      
+      // Appliquer des règles d'ajustement spécifiques
+      
+      // Règle du leadership exceptionnel
+      if (capable >= 8.5 && veut >= 7 && peut >= 6.5) {
+        classification = classification === "B+" ? "A" : classification;
+      }
+      
+      // Règle de la performance exceptionnelle
+      if (peut >= 8.5 && veut >= 6.5) {
+        classification = classification === "B+" ? "A" : classification;
+        classification = classification === "B" ? "B+" : classification;
+      }
+      
+      // Règle du potentiel inexploité
+      if (capable >= 8 && peut < 6) {
+        classification = classification === "C" ? "B" : classification;
+      }
+      
+      // Règle de la performance insuffisante
+      if (peut < 4.5 && classification !== "D") {
+        classification = classification === "A" ? "B+" : classification;
+        classification = classification === "B+" ? "B" : classification;
+        classification = classification === "B" ? "C" : classification;
+      }
+      
+      return classification;
+    }
+    
+    function positionOnQuadrant(playerType, peutAvg, capableAvg, veutAvg) {
+      const marker = document.getElementById('position-marker');
+      
+      // Special case for D type
+      if (playerType === "D") {
+        marker.style.left = "20%";
+        marker.style.top = "80%";
+        marker.style.backgroundColor = "#721c24";
+        return;
+      }
+      
+      // Calculate position
+      // X-axis: Performance (Peut)
+      // Y-axis: weighted combination of Veut and Capable, with greater emphasis on Capable
+      const xPos = (peutAvg / 10) * 100;
+      const yPos = 100 - ((veutAvg * 0.4 + capableAvg * 0.6) / 10) * 100;
+      
+      // Apply position
+      marker.style.left = xPos + "%";
+      marker.style.top = yPos + "%";
+      
+      // Set marker color based on player type
+      const colors = {
+        "A+": "#1e7e34",
+        "A": "#28a745",
+        "B+": "#ffc107",
+        "B": "#fd7e14",
+        "C": "#dc3545"
+      };
+      
+      marker.style.backgroundColor = colors[playerType] || "#721c24";
+    }
+    
+    function getRecommendation(type) {
+      switch(type) {
+        case "A+":
+          return "Talent exceptionnel à retenir absolument. Offrir des défis à la hauteur de son potentiel, des opportunités d'évolution rapide et un parcours personnalisé vers les postes stratégiques. Impliquer cette personne dans les projets d'innovation et de transformation.";
+        case "A":
+          return "Excellent élément à développer et fidéliser. Proposer des responsabilités croissantes, un parcours de développement personnalisé et des opportunités de mentorat. Envisager comme successeur potentiel pour des postes clés à moyen terme.";
+        case "B+":
+          return "Bon potentiel à accompagner. Mettre en place un plan de développement ciblé pour améliorer la performance et l'alignement avec les valeurs de l'entreprise. Définir des objectifs de progression clairs et offrir les formations nécessaires.";
+        case "B":
+          return "Collaborateur fiable. Clarifier les attentes, proposer des formations pour renforcer ses compétences et l'accompagner dans la compréhension des valeurs de l'entreprise. Assigner des projets adaptés à ses forces actuelles tout en l'aidant à développer ses points d'amélioration.";
+        case "C":
+          return "Performance insuffisante nécessitant un suivi rapproché. Établir un plan d'action avec des objectifs précis à court terme, des points d'étape fréquents et un accompagnement intensif. Réévaluer le fit avec le poste actuel dans un délai de 3 à 6 mois.";
+        case "D":
+          return "Employé en désalignement significatif avec les valeurs fondamentales de l'entreprise. Un plan de transition devrait être envisagé car le manque d'alignement avec les valeurs crée un effet détracteur dans l'organisation et limite fortement les possibilités d'évolution.";
+        default:
+          return "";
+      }
+    }
+    
+    function updateActionItems(playerType, veutAvg, peutAvg, capableAvg) {
+      // Define action items based on player type and scores
+      const actionItems = [];
+      
+      // Common action for all (always at least one action)
+      actionItems.push({
+        icon: "",
+        title: "Entretien de feedback",
+        description: "Organiser un entretien détaillé pour partager les résultats de cette évaluation."
+      });
+      
+      // Type-specific actions
+      if (playerType === "A+" || playerType === "A") {
+        actionItems.push({
+          icon: "",
+          title: "Opportunités stratégiques",
+          description: "Impliquer dans des projets stratégiques et de transformation."
+        });
+        
+        actionItems.push({
+          icon: "",
+          title: "Programme de fidélisation",
+          description: "Établir un plan de développement carrière personnalisé incluant des avantages adaptés."
+        });
+      }
+      
+      if (playerType === "B+" || playerType === "B") {
+        actionItems.push({
+          icon: "",
+          title: "Plan de formation",
+          description: "Identifier les compétences clés à développer et proposer des formations adaptées."
+        });
+      }
+      
+      if (playerType === "C") {
+        actionItems.push({
+          icon: "",
+          title: "Plan de progression",
+          description: "Définir des objectifs SMART à court terme avec suivi hebdomadaire."
+        });
+      }
+      
+      if (playerType === "D") {
+        actionItems.push({
+          icon: "",
+          title: "Réorientation",
+          description: "Évaluer les options de réaffectation ou d'accompagnement vers une transition externe."
+        });
+      }
+      
+      // Dimension-specific actions
+      if (veutAvg < 5) {
+        actionItems.push({
+          icon: "",
+          title: "Renforcement de l'alignement",
+          description: "Sessions d'appropriation des valeurs et de la culture d'entreprise."
+        });
+      }
+      
+      if (peutAvg < 5) {
+        actionItems.push({
+          icon: "",
+          title: "Amélioration de la performance",
+          description: "Coaching personnalisé sur les compétences techniques et opérationnelles."
+        });
+      }
+      
+      if (capableAvg >= 7 && (peutAvg < 7 || veutAvg < 7)) {
+        actionItems.push({
+          icon: "",
+          title: "Libération du potentiel",
+          description: "Assigner des projets stimulants pour mobiliser pleinement le potentiel identifié."
+        });
+      }
+      
+      // Render action items (limit to 4 maximum)
+      const actionItemsHTML = actionItems.slice(0, 4).map(item => `
+        <div class="action-item">
+          <div class="action-icon">
+          </div>
+          <div class="action-content">
+            <div class="action-title">${item.title}</div>
+            <div class="action-description">${item.description}</div>
+          </div>
+        </div>
+      `).join('');
+      
+      document.getElementById('action-items-container').innerHTML = actionItemsHTML;
+    }
+    
+    // Fonction pour ajouter un indicateur de progression
+    function addProgressionIndicator(currentScore, previousScore) {
+      // Calculer la différence
+      const difference = currentScore - previousScore;
+      const percentChange = ((difference / previousScore) * 100).toFixed(1);
+      
+      // Créer l'indicateur de progression
+      const progressDiv = document.createElement('div');
+      progressDiv.style.marginTop = '20px';
+      progressDiv.style.padding = '15px';
+      progressDiv.style.borderRadius = '8px';
+      
+      // Déterminer la couleur et le message en fonction de la progression
+      if (difference > 0.5) {
+        progressDiv.style.backgroundColor = '#d4edda';
+        progressDiv.style.border = '1px solid #c3e6cb';
+        progressDiv.style.color = '#155724';
+        progressDiv.innerHTML = `
+          <h3 style="margin-top: 0;">Progression significative (+${percentChange}%)</h3>
+          <p>L'employé montre une amélioration notable depuis la dernière évaluation (de ${previousScore.toFixed(1)} à ${currentScore.toFixed(1)}).</p>
+          <p><strong>Recommandation:</strong> Reconnaître cette progression et encourager la poursuite de cette dynamique positive.</p>
+        `;
+      } else if (difference > 0) {
+        progressDiv.style.backgroundColor = '#fff3cd';
+        progressDiv.style.border = '1px solid #ffeeba';
+        progressDiv.style.color = '#856404';
+        progressDiv.innerHTML = `
+          <h3 style="margin-top: 0;">Légère progression (+${percentChange}%)</h3>
+          <p>L'employé montre une légère amélioration depuis la dernière évaluation (de ${previousScore.toFixed(1)} à ${currentScore.toFixed(1)}).</p>
+          <p><strong>Recommandation:</strong> Continuer à soutenir l'employé et identifier des opportunités d'accélérer sa progression.</p>
+        `;
+      } else if (difference > -0.5) {
+        progressDiv.style.backgroundColor = '#fff3cd';
+        progressDiv.style.border = '1px solid #ffeeba';
+        progressDiv.style.color = '#856404';
+        progressDiv.innerHTML = `
+          <h3 style="margin-top: 0;">Performance stable (${percentChange}%)</h3>
+          <p>L'employé maintient un niveau similaire à la dernière évaluation (de ${previousScore.toFixed(1)} à ${currentScore.toFixed(1)}).</p>
+          <p><strong>Recommandation:</strong> Discuter des axes d'amélioration pour stimuler une nouvelle progression.</p>
+        `;
+      } else {
+        progressDiv.style.backgroundColor = '#f8d7da';
+        progressDiv.style.border = '1px solid #f5c6cb';
+        progressDiv.style.color = '#721c24';
+        progressDiv.innerHTML = `
+          <h3 style="margin-top: 0;">Régression (${percentChange}%)</h3>
+          <p>L'employé montre une baisse de performance depuis la dernière évaluation (de ${previousScore.toFixed(1)} à ${currentScore.toFixed(1)}).</p>
+          <p><strong>Recommandation:</strong> Organiser rapidement un entretien pour comprendre les causes de cette régression et mettre en place un plan d'action.</p>
+        `;
+      }
+      
+      // Insérer l'indicateur avant la section de recommandation
+      const recommendations = document.querySelector('.recommendations');
+      recommendations.parentNode.insertBefore(progressDiv, recommendations);
+    }
+    
+    // Fonction de simulation d'API (à remplacer par un vrai appel API)
+    function simulateApiCall(data) {
+      return new Promise((resolve, reject) => {
+        // Simuler un délai réseau de 1.5 secondes
+        setTimeout(() => {
+          // Simuler une réponse réussie 90% du temps
+          if (Math.random() < 0.9) {
+            resolve({
+              success: true,
+              id: 'eval_' + Math.floor(Math.random() * 1000000),
+              message: 'Données enregistrées avec succès'
+            });
+          } else {
+            // Simuler une erreur 10% du temps
+            reject({
+              success: false,
+              error: 'Erreur de connexion au serveur'
+            });
+          }
+        }, 1500);
+      });
+    }
+    
+    // Fonction pour afficher une notification
+    function showNotification(title, message, type) {
+      // Créer l'élément de notification
+      const notification = document.createElement('div');
+      
+      // Définir le style en fonction du type
+      const backgroundColor = type === 'success' ? '#d4edda' : '#f8d7da';
+      const textColor = type === 'success' ? '#155724' : '#721c24';
+      const borderColor = type === 'success' ? '#c3e6cb' : '#f5c6cb';
+      const icon = type === 'success' ? '✓' : '✗';
+      
+      // Appliquer les styles
+      notification.style.position = 'fixed';
+      notification.style.top = '20px';
+      notification.style.right = '20px';
+      notification.style.backgroundColor = backgroundColor;
+      notification.style.color = textColor;
+      notification.style.padding = '15px 20px';
+      notification.style.borderRadius = '5px';
+      notification.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+      notification.style.zIndex = '9999';
+      notification.style.minWidth = '300px';
+      notification.style.border = `1px solid ${borderColor}`;
+      
+      // Définir le contenu
+      notification.innerHTML = `
+        <div style="display: flex; align-items: flex-start;">
+          <div style="background-color: ${textColor}; color: white; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%; margin-right: 10px;">
+            ${icon}
+          </div>
+          <div>
+            <div style="font-weight: bold; margin-bottom: 5px;">${title}</div>
+            <div>${message}</div>
+          </div>
+          <div style="margin-left: auto; cursor: pointer; font-weight: bold;" onclick="this.parentNode.parentNode.remove()">×</div>
+        </div>
+      `;
+      
+      // Ajouter au document
+      document.body.appendChild(notification);
+      
+      // Supprimer après 5 secondes
+      setTimeout(() => {
+        if (document.body.contains(notification)) {
+          document.body.removeChild(notification);
+        }
+      }, 5000);
+    }
+    
+    // Fonction pour afficher un lien vers le dashboard
+    function showDashboardLink() {
+      // Vérifier si le lien existe déjà
+      if (document.getElementById('dashboard-link')) {
+        return;
+      }
+      
+      // Créer l'élément de lien
+      const dashboardLink = document.createElement('div');
+      dashboardLink.id = 'dashboard-link';
+      
+      // Appliquer les styles
+      dashboardLink.style.marginTop = '20px';
+      dashboardLink.style.padding = '15px';
+      dashboardLink.style.backgroundColor = '#e8f4fd';
+      dashboardLink.style.border = '1px solid #b8daff';
+      dashboardLink.style.borderRadius = '5px';
+      dashboardLink.style.color = '#004085';
+      
+      // Définir le contenu
+      dashboardLink.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <strong>Données enregistrées avec succès!</strong>
+            <p>Vous pouvez maintenant accéder au dashboard pour visualiser toutes les évaluations.</p>
+          </div>
+          <a href="dashboard.html" target="_blank" style="background-color: #007bff; color: white; padding: 8px 15px; border-radius: 4px; text-decoration: none;">
+            Voir le Dashboard
+          </a>
+        </div>
+      `;
+      
+      // Ajouter au document
+      document.getElementById('results').appendChild(dashboardLink);
+    }
+  </script>
   <style>
     :root {
       --primary-color: #f89c27;
@@ -1077,7 +1800,7 @@
       <button type="button" id="reset-button" class="btn btn-outline">
         Réinitialiser
       </button>
-      <button type="button" id="evaluate-button" class="btn btn-primary">
+      <button type="button" id="evaluate-button" class="btn btn-primary" onclick="evaluateEmployee()">
         Évaluer
       </button>
     </div>
@@ -1215,928 +1938,4 @@
             <div class="quadrant-label label-left">Performance faible</div>
             <div class="quadrant-label label-right">Performance élevée</div>
             
-            <div class="quadrant-area q1">Stars</div>
-            <div class="quadrant-area q2">Potentiels</div>
-            <div class="quadrant-area q3">Problématiques</div>
-            <div class="quadrant-area q4">Piliers</div>
-            
-            <div id="position-marker" class="position-marker" style="left: 50%; top: 50%"></div>
-          </div>
-          
-          <div>
-            <h3>Classification des talents:</h3>
-            <ul style="list-style-type: none; padding-left: 0;">
-              <li style="margin-bottom: 10px;">
-                <strong style="color: var(--primary-color); font-size: 18px;">A+</strong>: Talent exceptionnel (performance et potentiel excellents)
-              </li>
-              <li style="margin-bottom: 10px;">
-                <strong style="color: var(--primary-color);">A</strong>: Talent de grande valeur (excellente performance)
-              </li>
-              <li style="margin-bottom: 10px;">
-                <strong style="color: var(--primary-color);">B+</strong>: Talent prometteur (bon équilibre potentiel/performance)
-              </li>
-              <li style="margin-bottom: 10px;">
-                <strong style="color: var(--primary-color);">B</strong>: Talent solide (performance satisfaisante)
-              </li>
-              <li style="margin-bottom: 10px;">
-                <strong style="color: var(--secondary-color);">C</strong>: Talent à accompagner (performance insuffisante)
-              </li>
-              <li style="margin-bottom: 10px;">
-                <strong style="color: var(--secondary-color);">D</strong>: Désalignement important (misfit avec les valeurs)
-              </li>
-            </ul>
-          </div>
-        </div>
-        
-        <div class="recommendations">
-          <div class="recommendation-title">
-            Recommandation pour <span id="employee-name-rec">Jean Dupont</span> (Catégorie <span id="player-type-rec">B+</span>):
-          </div>
-          <p id="recommendation-text">
-            Bon potentiel à accompagner. Mettre en place un plan de développement ciblé pour améliorer la performance et l'alignement avec les valeurs de l'entreprise.
-          </p>
-        </div>
-        
-        <div class="actions-section">
-          <h3>Plan d'action recommandé</h3>
-          
-          <div id="action-items-container">
-            <div class="action-item">
-              <div class="action-icon">
-              </div>
-              <div class="action-content">
-                <div class="action-title">Formation sur les compétences techniques</div>
-                <div class="action-description">Proposer des formations pour renforcer les compétences spécifiques au poste.</div>
-              </div>
-            </div>
-            
-            <div class="action-item">
-              <div class="action-icon">
-              </div>
-              <div class="action-content">
-                <div class="action-title">Clarification des objectifs</div>
-                <div class="action-description">Établir des objectifs SMART et organiser des points d'étapes réguliers.</div>
-              </div>
-            </div>
-            
-            <div class="action-item">
-              <div class="action-icon">
-              </div>
-              <div class="action-content">
-                <div class="action-title">Mentorat</div>
-                <div class="action-description">Assigner un mentor pour favoriser l'intégration des valeurs et améliorer la performance.</div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="buttons-container">
-          <button type="button" id="print-button" class="btn btn-outline">
-            Imprimer
-          </button>
-          <button type="button" id="export-button" class="btn btn-primary">
-            Exporter en PDF
-          </button>
-          <button type="button" id="save-database-button" class="btn btn-primary" style="background-color: #28a745;">
-            Enregistrer dans la base de données
-          </button>
-        </div>
-      </div>
-    </div>
-    
-    <footer>
-      <p>© 2025 GAM • Système d'Évaluation des Talents • Tous droits réservés</p>
-    </footer>
-  </div>
-
-  <script>
-    // Set current date as default
-    document.addEventListener('DOMContentLoaded', function() {
-      const today = new Date();
-      const formattedDate = today.toISOString().split('T')[0];
-      document.getElementById('evaluation-date').value = formattedDate;
-    });
-    
-    // Reset form
-    document.getElementById('reset-button').addEventListener('click', function() {
-      if (confirm("Êtes-vous sûr de vouloir réinitialiser le formulaire ? Toutes les données seront perdues.")) {
-        document.getElementById('evaluation-form').reset();
-        document.getElementById('results').style.display = 'none';
-      }
-    });
-    
-    // Print functionality
-    document.getElementById('print-button').addEventListener('click', function() {
-      window.print();
-    });
-    
-    // Fonction pour enregistrer les données dans la base de données
-    document.getElementById('save-database-button').addEventListener('click', function() {
-      // Désactiver le bouton pendant le traitement
-      this.disabled = true;
-      this.textContent = 'Enregistrement en cours...';
-      
-      // Collecter toutes les données d'évaluation
-      const evaluationData = {
-        employee: {
-          name: document.getElementById('employee-name').value,
-          position: document.getElementById('employee-position').value,
-          evaluationDate: document.getElementById('evaluation-date').value
-        },
-        scores: {
-          veut: {
-            average: parseFloat(document.getElementById('veut-avg').textContent),
-            audace: getSelectedValue('audace'),
-            rigueur: getSelectedValue('rigueur'),
-            impact: getSelectedValue('impact'),
-            innovation: getSelectedValue('innovation'),
-            cohesion: getSelectedValue('cohesion'),
-            empathie: getSelectedValue('empathie')
-          },
-          peut: {
-            average: parseFloat(document.getElementById('peut-avg').textContent),
-            qualite: getSelectedValue('qualite'),
-            objectifs: getSelectedValue('objectifs'),
-            problemes: getSelectedValue('problemes')
-          },
-          capable: {
-            average: parseFloat(document.getElementById('capable-avg').textContent),
-            adaptation: getSelectedValue('adaptation'),
-            leadership: getSelectedValue('leadership'),
-            vision: getSelectedValue('vision')
-          }
-        },
-        classification: document.getElementById('player-type-rec').textContent,
-        timestamp: new Date().toISOString()
-      };
-      
-      // Simulation de l'envoi à une API (dans un vrai scénario, ceci serait remplacé par un appel à votre API)
-      simulateApiCall(evaluationData)
-        .then(response => {
-          // Réactiver le bouton
-          this.disabled = false;
-          this.textContent = 'Enregistrer dans la base de données';
-          
-          // Afficher un message de succès
-          showNotification('Succès', 'Les données ont été enregistrées avec succès dans la base de données', 'success');
-          
-          // Stocker l'ID de l'évaluation (fourni par le backend) pour référence future
-          localStorage.setItem('lastEvaluationId', response.id);
-          
-          // Afficher un lien vers le dashboard
-          showDashboardLink();
-        })
-        .catch(error => {
-          // Réactiver le bouton
-          this.disabled = false;
-          this.textContent = 'Enregistrer dans la base de données';
-          
-          // Afficher un message d'erreur
-          showNotification('Erreur', 'Une erreur est survenue lors de l\'enregistrement des données. Veuillez réessayer.', 'error');
-          
-          console.error('Erreur lors de l\'enregistrement:', error);
-        });
-    });
-    
-    // Fonction de simulation d'API (à remplacer par un vrai appel API)
-    function simulateApiCall(data) {
-      return new Promise((resolve, reject) => {
-        // Simuler un délai réseau de 1.5 secondes
-        setTimeout(() => {
-          // Simuler une réponse réussie 90% du temps
-          if (Math.random() < 0.9) {
-            resolve({
-              success: true,
-              id: 'eval_' + Math.floor(Math.random() * 1000000),
-              message: 'Données enregistrées avec succès'
-            });
-          } else {
-            // Simuler une erreur 10% du temps
-            reject({
-              success: false,
-              error: 'Erreur de connexion au serveur'
-            });
-          }
-        }, 1500);
-      });
-    }
-    
-    // Fonction pour afficher une notification
-    function showNotification(title, message, type) {
-      // Créer l'élément de notification
-      const notification = document.createElement('div');
-      
-      // Définir le style en fonction du type
-      const backgroundColor = type === 'success' ? '#d4edda' : '#f8d7da';
-      const textColor = type === 'success' ? '#155724' : '#721c24';
-      const borderColor = type === 'success' ? '#c3e6cb' : '#f5c6cb';
-      const icon = type === 'success' ? '✓' : '✗';
-      
-      // Appliquer les styles
-      notification.style.position = 'fixed';
-      notification.style.top = '20px';
-      notification.style.right = '20px';
-      notification.style.backgroundColor = backgroundColor;
-      notification.style.color = textColor;
-      notification.style.padding = '15px 20px';
-      notification.style.borderRadius = '5px';
-      notification.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
-      notification.style.zIndex = '9999';
-      notification.style.minWidth = '300px';
-      notification.style.border = `1px solid ${borderColor}`;
-      
-      // Définir le contenu
-      notification.innerHTML = `
-        <div style="display: flex; align-items: flex-start;">
-          <div style="background-color: ${textColor}; color: white; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 50%; margin-right: 10px;">
-            ${icon}
-          </div>
-          <div>
-            <div style="font-weight: bold; margin-bottom: 5px;">${title}</div>
-            <div>${message}</div>
-          </div>
-          <div style="margin-left: auto; cursor: pointer; font-weight: bold;" onclick="this.parentNode.parentNode.remove()">×</div>
-        </div>
-      `;
-      
-      // Ajouter au document
-      document.body.appendChild(notification);
-      
-      // Supprimer après 5 secondes
-      setTimeout(() => {
-        if (document.body.contains(notification)) {
-          document.body.removeChild(notification);
-        }
-      }, 5000);
-    }
-    
-    // Fonction pour afficher un lien vers le dashboard
-    function showDashboardLink() {
-      // Vérifier si le lien existe déjà
-      if (document.getElementById('dashboard-link')) {
-        return;
-      }
-      
-      // Créer l'élément de lien
-      const dashboardLink = document.createElement('div');
-      dashboardLink.id = 'dashboard-link';
-      
-      // Appliquer les styles
-      dashboardLink.style.marginTop = '20px';
-      dashboardLink.style.padding = '15px';
-      dashboardLink.style.backgroundColor = '#e8f4fd';
-      dashboardLink.style.border = '1px solid #b8daff';
-      dashboardLink.style.borderRadius = '5px';
-      dashboardLink.style.color = '#004085';
-      
-      // Définir le contenu
-      dashboardLink.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-          <div>
-            <strong>Données enregistrées avec succès!</strong>
-            <p>Vous pouvez maintenant accéder au dashboard pour visualiser toutes les évaluations.</p>
-          </div>
-          <a href="dashboard.html" target="_blank" style="background-color: #007bff; color: white; padding: 8px 15px; border-radius: 4px; text-decoration: none;">
-            Voir le Dashboard
-          </a>
-        </div>
-      `;
-      
-      // Ajouter au document
-      document.getElementById('results').appendChild(dashboardLink);
-    }
-    
-    // Calculer la moyenne et mettre à jour les composantes du système
-    function evaluateEmployee() {
-      // Fonction pour obtenir la valeur sélectionnée d'un groupe de boutons radio
-      function getSelectedValue(name) {
-        const radios = document.getElementsByName(name);
-        for (let i = 0; i < radios.length; i++) {
-          if (radios[i].checked) {
-            return parseInt(radios[i].value);
-          }
-        }
-        return 0;
-      }
-      
-      // Calculer les moyennes pour chaque dimension
-      // Veut section
-      const audaceScore = getSelectedValue('audace');
-      const rigueurScore = getSelectedValue('rigueur');
-      const impactScore = getSelectedValue('impact');
-      const innovationScore = getSelectedValue('innovation');
-      const cohesionScore = getSelectedValue('cohesion');
-      const empathieScore = getSelectedValue('empathie');
-      const veutAvg = (audaceScore + rigueurScore + impactScore + innovationScore + cohesionScore + empathieScore) / 6;
-      
-      // Peut section
-      const qualiteScore = getSelectedValue('qualite');
-      const objectifsScore = getSelectedValue('objectifs');
-      const problemesScore = getSelectedValue('problemes');
-      const peutAvg = (qualiteScore + objectifsScore + problemesScore) / 3;
-      
-      // Capable section
-      const adaptationScore = getSelectedValue('adaptation');
-      const leadershipScore = getSelectedValue('leadership');
-      const visionScore = getSelectedValue('vision');
-      const capableAvg = (adaptationScore + leadershipScore + visionScore) / 3;
-      
-      // Obtenir le niveau et département de l'employé
-      const employeeLevel = document.getElementById('employee-level').value;
-      const employeeDept = document.getElementById('employee-department').value;
-      
-      // Récupérer les poids adaptés au rôle/département
-      const roleWeights = {
-        'junior': { veut: 0.4, peut: 0.35, capable: 0.25 },
-        'intermediate': { veut: 0.35, peut: 0.4, capable: 0.25 },
-        'senior': { veut: 0.3, peut: 0.4, capable: 0.3 },
-        'lead': { veut: 0.3, peut: 0.35, capable: 0.35 },
-        'manager': { veut: 0.35, peut: 0.3, capable: 0.35 },
-        'director': { veut: 0.35, peut: 0.25, capable: 0.4 },
-        'executive': { veut: 0.4, peut: 0.2, capable: 0.4 }
-      };
-      
-      const departmentWeights = {
-        'technology': { veut: 0.3, peut: 0.45, capable: 0.25 },
-        'marketing': { veut: 0.35, peut: 0.4, capable: 0.25 },
-        'sales': { veut: 0.45, peut: 0.4, capable: 0.15 },
-        'finance': { veut: 0.3, peut: 0.5, capable: 0.2 },
-        'hr': { veut: 0.4, peut: 0.3, capable: 0.3 },
-        'operations': { veut: 0.25, peut: 0.45, capable: 0.3 },
-        'customer-service': { veut: 0.4, peut: 0.4, capable: 0.2 },
-        'r-and-d': { veut: 0.3, peut: 0.3, capable: 0.4 }
-      };
-      
-      // Calculer les poids finaux (combinaison du rôle et du département)
-      const roleWeight = roleWeights[employeeLevel] || { veut: 0.33, peut: 0.33, capable: 0.34 };
-      const deptWeight = departmentWeights[employeeDept] || { veut: 0.33, peut: 0.33, capable: 0.34 };
-      
-      const finalWeights = {
-        veut: (roleWeight.veut + deptWeight.veut) / 2,
-        peut: (roleWeight.peut + deptWeight.peut) / 2,
-        capable: (roleWeight.capable + deptWeight.capable) / 2
-      };
-      
-      // Normaliser les poids pour qu'ils totalisent 1
-      const totalWeight = finalWeights.veut + finalWeights.peut + finalWeights.capable;
-      finalWeights.veut = finalWeights.veut / totalWeight;
-      finalWeights.peut = finalWeights.peut / totalWeight;
-      finalWeights.capable = finalWeights.capable / totalWeight;
-      
-      // Calculer le score composite pondéré
-      const compositeScore = (veutAvg * finalWeights.veut) + (peutAvg * finalWeights.peut) + (capableAvg * finalWeights.capable);
-      
-      // Afficher les scores moyens
-      document.getElementById('veut-avg').textContent = veutAvg.toFixed(1);
-      document.getElementById('peut-avg').textContent = peutAvg.toFixed(1);
-      document.getElementById('capable-avg').textContent = capableAvg.toFixed(1);
-      document.getElementById('composite-score').textContent = compositeScore.toFixed(1);
-      
-      // Mettre à jour les badges de score
-      updateScoreBadge('veut-badge', veutAvg);
-      updateScoreBadge('peut-badge', peutAvg);
-      updateScoreBadge('capable-badge', capableAvg);
-      
-      // Déterminer les interprétations
-      document.getElementById('veut-interpretation').textContent = getInterpretation('veut', veutAvg);
-      document.getElementById('peut-interpretation').textContent = getInterpretation('peut', peutAvg);
-      document.getElementById('capable-interpretation').textContent = getInterpretation('capable', capableAvg);
-      
-      // Interprétations détaillées
-      document.getElementById('veut-details').textContent = getDetailedInterpretation('veut', veutAvg, audaceScore, rigueurScore, impactScore, innovationScore, cohesionScore, empathieScore);
-      document.getElementById('peut-details').textContent = getDetailedInterpretation('peut', peutAvg, qualiteScore, objectifsScore, problemesScore);
-      document.getElementById('capable-details').textContent = getDetailedInterpretation('capable', capableAvg, adaptationScore, leadershipScore, visionScore);
-      
-      // Déterminer le type de joueur
-      const playerType = determinePlayerType(veutAvg, peutAvg, capableAvg);
-      
-      // Mise à jour de l'interface avec le type de joueur
-      document.getElementById('player-type').textContent = playerType;
-      document.getElementById('classification-description').textContent = getPlayerTypeDescription(playerType);
-      document.getElementById('player-type-rec').textContent = playerType;
-      
-      // Positionnement sur le quadrant
-      positionOnQuadrant(playerType, peutAvg, capableAvg, veutAvg);
-      
-      // Mise à jour de la recommandation
-      document.getElementById('recommendation-text').textContent = getRecommendation(playerType, employeeLevel);
-      
-      // Mise à jour des actions recommandées
-      updateActionItems(playerType, veutAvg, peutAvg, capableAvg, employeeLevel, employeeDept);
-      
-      // Simuler des données de calibration comparatives
-      updateCalibrationData(compositeScore, playerType, employeeLevel, employeeDept);
-      
-      // Vérifier si une précédente évaluation est disponible
-      if (document.getElementById('previous-evaluation').value === 'available') {
-        // Ajouter un indicateur de progression
-        addProgressionIndicator(compositeScore, 5.8); // Simuler un score précédent de 5.8
-      }
-      
-      // Montrer les résultats avec animation
-      document.getElementById('results').classList.remove('fade-in');
-      void document.getElementById('results').offsetWidth; // Forcer un reflow
-      document.getElementById('results').classList.add('fade-in');
-      document.getElementById('results').style.display = 'block';
-      
-      // Scroller vers les résultats
-      document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
-    }
-    
-    // Fonction pour simuler les données de calibration
-    function updateCalibrationData(compositeScore, playerType, level, department) {
-      // Calculer un rang percentile basé sur le score composite (simulation)
-      const deptPercentile = Math.round(compositeScore * 10);
-      const globalPercentile = Math.round(compositeScore * 7 + Math.random() * 20);
-      
-      // Mettre à jour l'interface
-      document.getElementById('dept-percentile').innerHTML = `${deptPercentile}<sup>ème</sup>`;
-      document.getElementById('global-percentile').innerHTML = `${globalPercentile}<sup>ème</sup>`;
-      
-      // Déterminer la comparaison par niveau
-      let levelCompText = "";
-      if (compositeScore > 7) {
-        levelCompText = `Au-dessus de la moyenne des ${level}s`;
-      } else if (compositeScore > 5) {
-        levelCompText = `Légèrement au-dessus de la moyenne des ${level}s`;
-      } else if (compositeScore > 4) {
-        levelCompText = `Dans la moyenne des ${level}s`;
-      } else {
-        levelCompText = `En dessous de la moyenne des ${level}s`;
-      }
-      document.getElementById('level-comparison').textContent = levelCompText;
-      
-      // Positionner le marqueur de calibration
-      document.getElementById('calibration-marker').style.left = `${deptPercentile}%`;
-    }
-    
-    // Fonction pour ajouter un indicateur de progression
-    function addProgressionIndicator(currentScore, previousScore) {
-      // Calculer la différence
-      const difference = currentScore - previousScore;
-      const percentChange = ((difference / previousScore) * 100).toFixed(1);
-      
-      // Créer l'indicateur de progression
-      const progressDiv = document.createElement('div');
-      progressDiv.style.marginTop = '20px';
-      progressDiv.style.padding = '15px';
-      progressDiv.style.borderRadius = '8px';
-      
-      // Déterminer la couleur et le message en fonction de la progression
-      if (difference > 0.5) {
-        progressDiv.style.backgroundColor = '#d4edda';
-        progressDiv.style.border = '1px solid #c3e6cb';
-        progressDiv.style.color = '#155724';
-        progressDiv.innerHTML = `
-          <h3 style="margin-top: 0;">Progression significative (+${percentChange}%)</h3>
-          <p>L'employé montre une amélioration notable depuis la dernière évaluation (de ${previousScore.toFixed(1)} à ${currentScore.toFixed(1)}).</p>
-          <p><strong>Recommandation:</strong> Reconnaître cette progression et encourager la poursuite de cette dynamique positive.</p>
-        `;
-      } else if (difference > 0) {
-        progressDiv.style.backgroundColor = '#fff3cd';
-        progressDiv.style.border = '1px solid #ffeeba';
-        progressDiv.style.color = '#856404';
-        progressDiv.innerHTML = `
-          <h3 style="margin-top: 0;">Légère progression (+${percentChange}%)</h3>
-          <p>L'employé montre une légère amélioration depuis la dernière évaluation (de ${previousScore.toFixed(1)} à ${currentScore.toFixed(1)}).</p>
-          <p><strong>Recommandation:</strong> Continuer à soutenir l'employé et identifier des opportunités d'accélérer sa progression.</p>
-        `;
-      } else if (difference > -0.5) {
-        progressDiv.style.backgroundColor = '#fff3cd';
-        progressDiv.style.border = '1px solid #ffeeba';
-        progressDiv.style.color = '#856404';
-        progressDiv.innerHTML = `
-          <h3 style="margin-top: 0;">Performance stable (${percentChange}%)</h3>
-          <p>L'employé maintient un niveau similaire à la dernière évaluation (de ${previousScore.toFixed(1)} à ${currentScore.toFixed(1)}).</p>
-          <p><strong>Recommandation:</strong> Discuter des axes d'amélioration pour stimuler une nouvelle progression.</p>
-        `;
-      } else {
-        progressDiv.style.backgroundColor = '#f8d7da';
-        progressDiv.style.border = '1px solid #f5c6cb';
-        progressDiv.style.color = '#721c24';
-        progressDiv.innerHTML = `
-          <h3 style="margin-top: 0;">Régression (${percentChange}%)</h3>
-          <p>L'employé montre une baisse de performance depuis la dernière évaluation (de ${previousScore.toFixed(1)} à ${currentScore.toFixed(1)}).</p>
-          <p><strong>Recommandation:</strong> Organiser rapidement un entretien pour comprendre les causes de cette régression et mettre en place un plan d'action.</p>
-        `;
-      }
-      
-      // Insérer l'indicateur avant la section de recommandation
-      const recommendations = document.querySelector('.recommendations');
-      recommendations.parentNode.insertBefore(progressDiv, recommendations);
-    }
-    
-    // Helper Functions
-    
-    function updateScoreBadge(elementId, score) {
-      const badge = document.getElementById(elementId);
-      badge.textContent = score.toFixed(1);
-      
-      // Update class based on score
-      badge.classList.remove('score-low', 'score-medium', 'score-high');
-      if (score >= 7) {
-        badge.classList.add('score-high');
-      } else if (score >= 4) {
-        badge.classList.add('score-medium');
-      } else {
-        badge.classList.add('score-low');
-      }
-    }
-    
-    function getInterpretation(category, value) {
-      if (category === 'veut') {
-        if (value >= 8) return "Très fort alignement avec les valeurs";
-        if (value >= 6) return "Bon alignement avec les valeurs";
-        if (value >= 4) return "Alignement moyen avec les valeurs";
-        return "Faible alignement avec les valeurs";
-      }
-      else if (category === 'peut') {
-        if (value >= 8) return "Performance exceptionnelle";
-        if (value >= 6) return "Bonne performance";
-        if (value >= 4) return "Performance acceptable";
-        return "Performance insuffisante";
-      }
-      else if (category === 'capable') {
-        if (value >= 8) return "Potentiel de croissance très élevé";
-        if (value >= 6) return "Bon potentiel de croissance";
-        if (value >= 4) return "Potentiel de croissance moyen";
-        return "Potentiel de croissance limité";
-      }
-      return "";
-    }
-    
-    function getDetailedInterpretation(category, avgScore, score1, score2, score3, score4, score5, score6) {
-      // Base interpretation from the average score
-      let baseInterpretation = getInterpretation(category, avgScore);
-      
-      // Additional detailed feedback based on individual scores
-      let details = "";
-      
-      if (category === 'veut') {
-        // Audace (score1)
-        if (score1 > avgScore + 2) {
-          details += " Excellente capacité à relever les défis avec enthousiasme.";
-        } else if (score1 < avgScore - 2) {
-          details += " Pourrait montrer plus d'audace face aux défis.";
-        }
-        
-        // Rigueur (score2)
-        if (score2 > avgScore + 2) {
-          details += " Excellente rigueur dans le travail.";
-        } else if (score2 < avgScore - 2) {
-          details += " La rigueur est un axe d'amélioration.";
-        }
-        
-        // Impact (score3)
-        if (score3 > avgScore + 2) {
-          details += " Crée un impact positif remarquable.";
-        } else if (score3 < avgScore - 2) {
-          details += " Pourrait renforcer l'impact de ses contributions.";
-        }
-        
-        // Innovation (score4)
-        if (score4 > avgScore + 2) {
-          details += " Recherche constante d'excellence et d'innovation.";
-        } else if (score4 < avgScore - 2) {
-          details += " Besoin de développer l'initiative d'innovation.";
-        }
-        
-        // Cohésion (score5)
-        if (score5 > avgScore + 2) {
-          details += " Excellente contribution à la cohésion d'équipe.";
-        } else if (score5 < avgScore - 2) {
-          details += " Pourrait mieux contribuer à la cohésion d'équipe.";
-        }
-        
-        // Empathie (score6)
-        if (score6 > avgScore + 2) {
-          details += " Fait preuve d'une empathie remarquable.";
-        } else if (score6 < avgScore - 2) {
-          details += " L'empathie est un axe de développement à privilégier.";
-        }
-      }
-      else if (category === 'peut') {
-        if (score1 > avgScore + 2) {
-          details += " Qualité de travail exemplaire.";
-        } else if (score1 < avgScore - 2) {
-          details += " La qualité du travail pourrait être améliorée.";
-        }
-        
-        if (score2 > avgScore + 2) {
-          details += " Atteint constamment ses objectifs.";
-        } else if (score2 < avgScore - 2) {
-          details += " L'atteinte des objectifs est à renforcer.";
-        }
-        
-        if (score3 > avgScore + 2) {
-          details += " Excellente capacité à résoudre les problèmes.";
-        } else if (score3 < avgScore - 2) {
-          details += " La résolution de problèmes est un axe de progression.";
-        }
-      }
-      else if (category === 'capable') {
-        if (score1 > avgScore + 2) {
-          details += " Capacité d'adaptation remarquable.";
-        } else if (score1 < avgScore - 2) {
-          details += " La capacité d'apprentissage pourrait être développée.";
-        }
-        
-        if (score2 > avgScore + 2) {
-          details += " Fort potentiel de leadership.";
-        } else if (score2 < avgScore - 2) {
-          details += " Les compétences de leadership sont à développer.";
-        }
-        
-        if (score3 > avgScore + 2) {
-          details += " Vision stratégique exceptionnelle.";
-        } else if (score3 < avgScore - 2) {
-          details += " La vision stratégique pourrait être élargie.";
-        }
-      }
-      
-      // If no specific details were added, provide a generic interpretation
-      if (details === "") {
-        if (category === 'veut') {
-          return `${baseInterpretation}. Démontre un niveau équilibré sur l'ensemble des valeurs de l'entreprise.`;
-        } else if (category === 'peut') {
-          return `${baseInterpretation}. Maintient un niveau cohérent de qualité, d'atteinte des objectifs et de résolution de problèmes.`;
-        } else {
-          return `${baseInterpretation}. Montre un équilibre entre capacité d'adaptation, leadership et vision stratégique.`;
-        }
-      }
-      
-      return `${baseInterpretation}.${details}`;
-    }
-    
-    function determinePlayerType(veut, peut, capable) {
-      // Système de pondération avancé basé sur les rôles
-      const roleWeights = {
-        'junior': { veut: 0.4, peut: 0.35, capable: 0.25 },
-        'intermediate': { veut: 0.35, peut: 0.4, capable: 0.25 },
-        'senior': { veut: 0.3, peut: 0.4, capable: 0.3 },
-        'lead': { veut: 0.3, peut: 0.35, capable: 0.35 },
-        'manager': { veut: 0.35, peut: 0.3, capable: 0.35 },
-        'director': { veut: 0.35, peut: 0.25, capable: 0.4 },
-        'executive': { veut: 0.4, peut: 0.2, capable: 0.4 }
-      };
-      
-      const departmentWeights = {
-        'technology': { veut: 0.3, peut: 0.45, capable: 0.25 },
-        'marketing': { veut: 0.35, peut: 0.4, capable: 0.25 },
-        'sales': { veut: 0.45, peut: 0.4, capable: 0.15 },
-        'finance': { veut: 0.3, peut: 0.5, capable: 0.2 },
-        'hr': { veut: 0.4, peut: 0.3, capable: 0.3 },
-        'operations': { veut: 0.25, peut: 0.45, capable: 0.3 },
-        'customer-service': { veut: 0.4, peut: 0.4, capable: 0.2 },
-        'r-and-d': { veut: 0.3, peut: 0.3, capable: 0.4 }
-      };
-      
-      // Récupérer le niveau et département sélectionnés
-      const employeeLevel = document.getElementById('employee-level').value;
-      const employeeDept = document.getElementById('employee-department').value;
-      
-      // Calculer les poids finaux (combinaison du rôle et du département)
-      const roleWeight = roleWeights[employeeLevel] || { veut: 0.33, peut: 0.33, capable: 0.34 };
-      const deptWeight = departmentWeights[employeeDept] || { veut: 0.33, peut: 0.33, capable: 0.34 };
-      
-      const finalWeights = {
-        veut: (roleWeight.veut + deptWeight.veut) / 2,
-        peut: (roleWeight.peut + deptWeight.peut) / 2,
-        capable: (roleWeight.capable + deptWeight.capable) / 2
-      };
-      
-      // Normaliser les poids pour qu'ils totalisent 1
-      const totalWeight = finalWeights.veut + finalWeights.peut + finalWeights.capable;
-      finalWeights.veut = finalWeights.veut / totalWeight;
-      finalWeights.peut = finalWeights.peut / totalWeight;
-      finalWeights.capable = finalWeights.capable / totalWeight;
-      
-      // Calculer le score composite pondéré
-      const compositeScore = (veut * finalWeights.veut) + (peut * finalWeights.peut) + (capable * finalWeights.capable);
-      
-      // Vérifier l'alignement des valeurs (critère éliminatoire)
-      if (veut < 4) {
-        return "D"; // Désalignement fondamental avec les valeurs
-      }
-      
-      // Déterminer la classification de base selon le score composite
-      let classification;
-      if (compositeScore >= 8.5) {
-        classification = "A+";
-      } else if (compositeScore >= 7.5) {
-        classification = "A";
-      } else if (compositeScore >= 6.5) {
-        classification = "B+";
-      } else if (compositeScore >= 5.0) {
-        classification = "B";
-      } else if (compositeScore >= 4.0) {
-        classification = "C";
-      } else {
-        classification = "D";
-      }
-      
-      // Appliquer des règles d'ajustement spécifiques
-      
-      // Règle du leadership exceptionnel
-      if (capable >= 8.5 && veut >= 7 && peut >= 6.5) {
-        classification = classification === "B+" ? "A" : classification;
-      }
-      
-      // Règle de la performance exceptionnelle
-      if (peut >= 8.5 && veut >= 6.5) {
-        classification = classification === "B+" ? "A" : classification;
-        classification = classification === "B" ? "B+" : classification;
-      }
-      
-      // Règle du potentiel inexploité
-      if (capable >= 8 && peut < 6) {
-        classification = classification === "C" ? "B" : classification;
-      }
-      
-      // Règle de la performance insuffisante
-      if (peut < 4.5 && classification !== "D") {
-        classification = classification === "A" ? "B+" : classification;
-        classification = classification === "B+" ? "B" : classification;
-        classification = classification === "B" ? "C" : classification;
-      }
-      
-      // Règle de détection des talents émergents (pour juniors et intermédiaires)
-      if ((employeeLevel === 'junior' || employeeLevel === 'intermediate') && 
-          capable >= 7.5 && veut >= 7.5 && peut >= 6) {
-        classification = classification === "B+" ? "A" : classification;
-        classification = classification === "B" ? "B+" : classification;
-      }
-      
-      // Vérifier l'équilibre entre dimensions (règle de cohérence)
-      const maxDifference = Math.max(
-        Math.abs(veut - peut), 
-        Math.abs(veut - capable), 
-        Math.abs(peut - capable)
-      );
-      
-      if (maxDifference > 3 && classification !== "D") {
-        // Appliquer une pénalité pour déséquilibre majeur
-        if (classification === "A+") classification = "A";
-        else if (classification === "A") classification = "B+";
-        else if (classification === "B+") classification = "B";
-      }
-      
-      return classification;
-    }
-    
-    function getPlayerTypeDescription(type) {
-      switch(type) {
-        case "A+": return "Talent exceptionnel";
-        case "A": return "Talent de grande valeur";
-        case "B+": return "Talent prometteur";
-        case "B": return "Talent solide";
-        case "C": return "Talent à accompagner";
-        case "D": return "Désalignement important";
-        default: return "";
-      }
-    }
-    
-    function positionOnQuadrant(playerType, peutAvg, capableAvg, veutAvg) {
-      const marker = document.getElementById('position-marker');
-      
-      // Special case for D type
-      if (playerType === "D") {
-        marker.style.left = "20%";
-        marker.style.top = "80%";
-        marker.style.backgroundColor = "#721c24";
-        return;
-      }
-      
-      // Calculate position
-      // X-axis: Performance (Peut)
-      // Y-axis: weighted combination of Veut and Capable, with greater emphasis on Capable
-      const xPos = (peutAvg / 10) * 100;
-      const yPos = 100 - ((veutAvg * 0.4 + capableAvg * 0.6) / 10) * 100;
-      
-      // Apply position
-      marker.style.left = xPos + "%";
-      marker.style.top = yPos + "%";
-      
-      // Set marker color based on player type
-      const colors = {
-        "A+": "#1e7e34",
-        "A": "#28a745",
-        "B+": "#ffc107",
-        "B": "#fd7e14",
-        "C": "#dc3545"
-      };
-      
-      marker.style.backgroundColor = colors[playerType] || "#721c24";
-    }
-    
-    function getRecommendation(type) {
-      switch(type) {
-        case "A+":
-          return "Talent exceptionnel à retenir absolument. Offrir des défis à la hauteur de son potentiel, des opportunités d'évolution rapide et un parcours personnalisé vers les postes stratégiques. Impliquer cette personne dans les projets d'innovation et de transformation.";
-        case "A":
-          return "Excellent élément à développer et fidéliser. Proposer des responsabilités croissantes, un parcours de développement personnalisé et des opportunités de mentorat. Envisager comme successeur potentiel pour des postes clés à moyen terme.";
-        case "B+":
-          return "Bon potentiel à accompagner. Mettre en place un plan de développement ciblé pour améliorer la performance et l'alignement avec les valeurs de l'entreprise. Définir des objectifs de progression clairs et offrir les formations nécessaires.";
-        case "B":
-          return "Collaborateur fiable. Clarifier les attentes, proposer des formations pour renforcer ses compétences et l'accompagner dans la compréhension des valeurs de l'entreprise. Assigner des projets adaptés à ses forces actuelles tout en l'aidant à développer ses points d'amélioration.";
-        case "C":
-          return "Performance insuffisante nécessitant un suivi rapproché. Établir un plan d'action avec des objectifs précis à court terme, des points d'étape fréquents et un accompagnement intensif. Réévaluer le fit avec le poste actuel dans un délai de 3 à 6 mois.";
-        case "D":
-          return "Employé en désalignement significatif avec les valeurs fondamentales de l'entreprise. Un plan de transition devrait être envisagé car le manque d'alignement avec les valeurs crée un effet détracteur dans l'organisation et limite fortement les possibilités d'évolution.";
-        default:
-          return "";
-      }
-    }
-    
-    function updateActionItems(playerType, veutAvg, peutAvg, capableAvg) {
-      // Define action items based on player type and scores
-              const actionItems = [];
-      
-      // Common action for all (always at least one action)
-      actionItems.push({
-        icon: "",
-        title: "Entretien de feedback",
-        description: "Organiser un entretien détaillé pour partager les résultats de cette évaluation."
-      });
-      
-      // Type-specific actions
-      if (playerType === "A+" || playerType === "A") {
-        actionItems.push({
-          icon: "",
-          title: "Opportunités stratégiques",
-          description: "Impliquer dans des projets stratégiques et de transformation."
-        });
-        
-        actionItems.push({
-          icon: "",
-          title: "Programme de fidélisation",
-          description: "Établir un plan de développement carrière personnalisé incluant des avantages adaptés."
-        });
-      }
-      
-      if (playerType === "B+" || playerType === "B") {
-        actionItems.push({
-          icon: "",
-          title: "Plan de formation",
-          description: "Identifier les compétences clés à développer et proposer des formations adaptées."
-        });
-      }
-      
-      if (playerType === "C") {
-        actionItems.push({
-          icon: "",
-          title: "Plan de progression",
-          description: "Définir des objectifs SMART à court terme avec suivi hebdomadaire."
-        });
-      }
-      
-      if (playerType === "D") {
-        actionItems.push({
-          icon: "",
-          title: "Réorientation",
-          description: "Évaluer les options de réaffectation ou d'accompagnement vers une transition externe."
-        });
-      }
-      
-      // Dimension-specific actions
-      if (veutAvg < 5) {
-        actionItems.push({
-          icon: "",
-          title: "Renforcement de l'alignement",
-          description: "Sessions d'appropriation des valeurs et de la culture d'entreprise."
-        });
-      }
-      
-      if (peutAvg < 5) {
-        actionItems.push({
-          icon: "",
-          title: "Amélioration de la performance",
-          description: "Coaching personnalisé sur les compétences techniques et opérationnelles."
-        });
-      }
-      
-      if (capableAvg >= 7 && (peutAvg < 7 || veutAvg < 7)) {
-        actionItems.push({
-          icon: "",
-          title: "Libération du potentiel",
-          description: "Assigner des projets stimulants pour mobiliser pleinement le potentiel identifié."
-        });
-      }
-      
-      // Render action items (limit to 4 maximum)
-      const actionItemsHTML = actionItems.slice(0, 4).map(item => `
-        <div class="action-item">
-          <div class="action-icon">
-          </div>
-          <div class="action-content">
-            <div class="action-title">${item.title}</div>
-            <div class="action-description">${item.description}</div>
-          </div>
-        </div>
-      `).join('');
-      
-      document.getElementById('action-items-container').innerHTML = actionItemsHTML;
-    }
-  </script>
-</body>
-</html>
+            <div class="quadrant

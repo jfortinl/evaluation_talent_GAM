@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Système d'Évaluation des Talents</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.5;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    h2 {
+      font-size: 20px;
+      margin-top: 25px;
+      margin-bottom: 15px;
+      color: #444;
+    }
+    .section {
+      margin-bottom: 30px;
+      padding: 15px;
+      border-radius: 8px;
+    }
+    .veut-section {
+      background-color: #e6f2ff;
+    }
+    .peut-section {
+      background-color: #e6ffe6;
+    }
+    .capable-section {
+      background-color: #fff9e6;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th {
+      background-color: rgba(0, 0, 0, 0.1);
+      padding: 10px;
+      text-align: left;
+      font-weight: bold;
+    }
+    td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    input[type="number"] {
+      width: 60px;
+      padding: 5px;
+      text-align: center;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      background-color: #0066cc;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 20px;
+    }
+    button:hover {
+      background-color: #0052a3;
+    }
+    .results {
+      display: none;
+      margin-top: 30px;
+      padding: 20px;
+      background-color: #f5f5f5;
+      border-radius: 8px;
+    }
+    .quadrant {
+      position: relative;
+      width: 400px;
+      height: 400px;
+      margin: 30px auto;
+      border: 1px solid #ccc;
+      background-color: white;
+    }
+    .axis-h {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background-color: #999;
+    }
+    .axis-v {
+      position: absolute;
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background-color: #999;
+    }
+    .q1 {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 50%;
+      height: 50%;
+      background-color: rgba(50, 205, 50, 0.1);
+    }
+    .q2 {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 50%;
+      height: 50%;
+      background-color: rgba(255, 215, 0, 0.1);
+    }
+    .q3 {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      width: 50%;
+      height: 50%;
+      background-color: rgba(255, 165, 0, 0.1);
+    }
+    .q4 {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 50%;
+      height: 50%;
+      background-color: rgba(255, 0, 0, 0.1);
+    }
+    .position-marker {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: red;
+      transform: translate(-50%, -50%);
+    }
+    .label {
+      position: absolute;
+      font-size: 12px;
+    }
+    .label-top {
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .label-bottom {
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .label-left {
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .label-right {
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .quadrant-label {
+      position: absolute;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .q1-label {
+      top: 25%;
+      right: 25%;
+      transform: translate(50%, -50%);
+    }
+    .q2-label {
+      top: 25%;
+      left: 25%;
+      transform: translate(-50%, -50%);
+    }
+    .q3-label {
+      bottom: 25%;
+      right: 25%;
+      transform: translate(50%, 50%);
+    }
+    .q4-label {
+      bottom: 25%;
+      left: 25%;
+      transform: translate(-50%, 50%);
+    }
+    .recommendations {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #e6f7ff;
+      border: 1px solid #91d5ff;
+      border-radius: 4px;
+    }
+    .player-type {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .legend {
+      margin-top: 20px;
+    }
+    .legend ul {
+      padding-left: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Système d'Évaluation des Talents</h1>
+  
+  <div>
+    <label for="employee-name"><strong>Nom de l'employé :</strong></label>
+    <input type="text" id="employee-name" value="Employé test" required>
+  </div>
+  
+  <div class="section veut-section">
+    <h2>Veut (Alignement avec les valeurs)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Valeur / Question</th>
+          <th style="width: 100px;">Note (1-10)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>AUDACE : Dans quelle mesure cet employé relève-t-il les défis avec enthousiasme ?</td>
+          <td><input type="number" min="1" max="10" value="5" class="veut-score" id="audace" required></td>
+        </tr>
+        <tr>
+          <td>RIGUEUR : À quel point cet employé s'assure-t-il de bien faire les choses du premier coup ?</td>
+          <td><input type="number" min="1" max="10" value="5" class="veut-score" id="rigueur" required></td>
+        </tr>
+        <tr>
+          <td>IMPACT : Comment cet employé contribue-t-il à créer un impact positif dans son travail ?</td>
+          <td><input type="number" min="1" max="10" value="5" class="veut-score" id="impact" required></td>
+        </tr>
+        <tr>
+          <td>EXCELLENCE ET INNOVATION : Dans quelle mesure cet employé cherche-t-il à s'améliorer et à innover quotidiennement ?</td>
+          <td><input type="number" min="1" max="10" value="5" class="veut-score" id="excellence" required></td>
+        </tr>
+        <tr>
+          <td>COHÉSION : Comment cet employé contribue-t-il au respect et à la confiance au sein de l'équipe ?</td>
+          <td><input type="number" min="1" max="10" value="5" class="veut-score" id="cohesion" required></td>
+        </tr>
+        <tr>
+          <td>EMPATHIE : À quel point cet employé fait-il preuve d'empathie envers les clients et ses collègues ?</td>
+          <td><input type="number" min="1" max="10" value="5" class="veut-score" id="empathie" required></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <div class="section peut-section">
+    <h2>Peut (Performance actuelle)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Question</th>
+          <th style="width: 100px;">Note (1-10)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1. Sur une échelle de 1 à 10, comment évalueriez-vous la qualité du travail de cet employé ?</td>
+          <td><input type="number" min="1" max="10" value="5" class="peut-score" id="qualite" required></td>
+        </tr>
+        <tr>
+          <td>2. Dans quelle mesure cet employé atteint-il ses objectifs de performance ?</td>
+          <td><input type="number" min="1" max="10" value="5" class="peut-score" id="objectifs" required></td>
+        </tr>
+        <tr>
+          <td>3. Comment noteriez-vous la fiabilité et la constance de cet employé dans l'exécution de ses tâches ?</td>
+          <td><input type="number" min="1" max="10" value="5" class="peut-score" id="fiabilite" required></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <div class="section capable-section">
+    <h2>Capable (Potentiel de croissance)</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Question</th>
+          <th style="width: 100px;">Note (1-10)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1. À quel point cet employé a-t-il démontré sa capacité à apprendre et à s'adapter à de nouvelles situations ?</td>
+          <td><input type="number" min="1" max="10" value="5" class="capable-score" id="adaptation" required></td>
+        </tr>
+        <tr>
+          <td>2. Dans quelle mesure pensez-vous que cet employé pourrait assumer des responsabilités plus importantes ?</td>
+          <td><input type="number" min="1" max="10" value="5" class="capable-score" id="responsabilites" required></td>
+        </tr>
+        <tr>
+          <td>3. Comment évalueriez-vous le potentiel de leadership de cet employé ?</td>
+          <td><input type="number" min="1" max="10" value="5" class="capable-score" id="leadership" required></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <div style="text-align: center;">
+    <button id="evaluate-button">Évaluer</button>
+  </div>
+  
+  <div id="results" class="results">
+    <h2>Résultats d'évaluation pour <span id="employee-name-result">Employé test</span></h2>
+    
+    <table>
+      <thead>
+        <tr>
+          <th>Critère</th>
+          <th style="width: 100px; text-align: center;">Moyenne</th>
+          <th>Interprétation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Veut (Alignement)</strong></td>
+          <td style="text-align: center;"><span id="veut-avg">-</span></td>
+          <td><span id="veut-interpretation">-</span></td>
+        </tr>
+        <tr>
+          <td><strong>Peut (Performance)</strong></td>
+          <td style="text-align: center;"><span id="peut-avg">-</span></td>
+          <td><span id="peut-interpretation">-</span></td>
+        </tr>
+        <tr>
+          <td><strong>Capable (Potentiel)</strong></td>
+          <td style="text-align: center;"><span id="capable-avg">-</span></td>
+          <td><span id="capable-interpretation">-</span></td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <h3>Positionnement: Joueur de type <span id="player-type">-</span></h3>
+    
+    <div class="quadrant">
+      <div class="axis-h"></div>
+      <div class="axis-v"></div>
+      <div class="q1"></div>
+      <div class="q2"></div>
+      <div class="q3"></div>
+      <div class="q4"></div>
+      <div class="label label-top">Potentiel élevé</div>
+      <div class="label label-bottom">Potentiel faible</div>
+      <div class="label label-left">Performance faible</div>
+      <div class="label label-right">Performance élevée</div>
+      <div class="quadrant-label q1-label">A+/A</div>
+      <div class="quadrant-label q2-label">B+</div>
+      <div class="quadrant-label q3-label">B</div>
+      <div class="quadrant-label q4-label">C</div>
+      <div class="quadrant-label" style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); color: #800000;">D: Détracteur (sous le quadrant)</div>
+      <div id="position-marker" class="position-marker" style="left: 50%; top: 50%"></div>
+    </div>
+    
+    <div class="legend">
+      <h4>Interprétation :</h4>
+      <ul>
+        <li><strong style="color: #006400;">A+/A</strong> : Talents exceptionnels à fort potentiel et haute performance</li>
+        <li><strong style="color: #B8860B;">B+</strong> : Bon potentiel mais performance à améliorer</li>
+        <li><strong style="color: #FF8C00;">B</strong> : Performance correcte, potentiel modéré</li>
+        <li><strong style="color: #B22222;">C</strong> : Performance insuffisante. Réévaluer le fit avec le poste actuel</li>
+        <li><strong style="color: #800000;">D</strong> : Détracteur - Désalignement avec les valeurs fondamentales</li>
+      </ul>
+    </div>
+    
+    <div class="recommendations">
+      <div class="player-type">Recommandation pour <span id="employee-name-rec">Employé test</span> :</div>
+      <p id="recommendation-text">-</p>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const evaluateButton = document.getElementById('evaluate-button');
+      evaluateButton.addEventListener('click', evaluateEmployee);
+
+      function calculateAverage(className) {
+        const scores = Array.from(document.querySelectorAll('.' + className))
+          .map(input => parseInt(input.value) || 0);
+        return scores.reduce((sum, score) => sum + score, 0) / scores.length;
+      }
+
+      function getInterpretation(category, value) {
+        if (category === 'veut') {
+          if (value >= 8) return "Très fort alignement avec les valeurs";
+          if (value >= 6) return "Bon alignement avec les valeurs";
+          if (value >= 4) return "Alignement moyen avec les valeurs";
+          return "Faible alignement avec les valeurs";
+        }
+        else if (category === 'peut') {
+          if (value >= 8) return "Performance exceptionnelle";
+          if (value >= 6) return "Bonne performance";
+          if (value >= 4) return "Performance acceptable";
+          return "Performance insuffisante";
+        }
+        else if (category === 'capable') {
+          if (value >= 8) return "Potentiel de croissance très élevé";
+          if (value >= 6) return "Bon potentiel de croissance";
+          if (value >= 4) return "Potentiel de croissance moyen";
+          return "Potentiel de croissance limité";
+        }
+        return "";
+      }
+
+      function determinePlayerType(veut, peut, capable) {
+        // Si l'alignement avec les valeurs est trop faible, l'employé est considéré comme un détracteur
+        if (veut < 4) {
+          return "D"; // Détracteur - indépendamment des autres scores
+        }
+        
+        // Pour les autres cas
+        if (peut >= 7 && veut >= 7 && capable >= 7) {
+          return "A+";
+        } else if (peut >= 7 && ((veut >= 7 && capable >= 5) || (veut >= 5 && capable >= 7))) {
+          return "A";
+        } else if (peut >= 5 && veut >= 5 && capable >= 5) {
+          return "B+";
+        } else if (peut >= 5 && (veut >= 4 || capable >= 4)) {
+          return "B";
+        } else {
+          return "C";
+        }
+      }
+
+      function getRecommendation(playerType) {
+        switch(playerType) {
+          case "A+":
+            return "Talent exceptionnel à retenir absolument. Offrir des défis à la hauteur de son potentiel et des opportunités d'évolution rapide.";
+          case "A":
+            return "Excellent élément à développer et fidéliser. Proposer des responsabilités croissantes et un parcours de développement personnalisé.";
+          case "B+":
+            return "Bon potentiel à accompagner. Mettre en place un plan de développement ciblé pour améliorer la performance.";
+          case "B":
+            return "Collaborateur fiable. Clarifier les attentes et proposer des formations pour renforcer ses compétences.";
+          case "C":
+            return "Performance insuffisante. Réévaluer le fit avec le poste actuel ou envisager une réorientation.";
+          case "D":
+            return "Employé en désalignement avec les valeurs fondamentales de l'entreprise. Un plan de transition devrait être envisagé car le manque d'alignement avec les valeurs crée un effet détracteur dans l'organisation.";
+          default:
+            return "";
+        }
+      }
+
+      function evaluateEmployee() {
+        // Vérifier que toutes les entrées sont valides
+        const inputs = document.querySelectorAll('input[type="number"]');
+        let allValid = true;
+        inputs.forEach(input => {
+          const value = parseInt(input.value);
+          if (isNaN(value) || value < 1 || value > 10) {
+            allValid = false;
+            input.style.borderColor = 'red';
+          } else {
+            input.style.borderColor = '#ccc';
+          }
+        });
+
+        if (!allValid) {
+          alert("Veuillez remplir toutes les notes avec des valeurs entre 1 et 10.");
+          return;
+        }
+
+        // Donner plus de poids à l'alignement des valeurs
+        const veutScores = Array.from(document.querySelectorAll('.veut-score'))
+          .map(input => parseInt(input.value) || 0);
+        const veutAvg = veutScores.reduce((sum, score) => sum + score, 0) / veutScores.length;
+        
+        const peutAvg = calculateAverage('peut-score');
+        const capableAvg = calculateAverage('capable-score');
+
+        // Afficher les moyennes et interprétations
+        document.getElementById('veut-avg').textContent = veutAvg.toFixed(2);
+        document.getElementById('peut-avg').textContent = peutAvg.toFixed(2);
+        document.getElementById('capable-avg').textContent = capableAvg.toFixed(2);
+
+        document.getElementById('veut-interpretation').textContent = getInterpretation('veut', veutAvg);
+        document.getElementById('peut-interpretation').textContent = getInterpretation('peut', peutAvg);
+        document.getElementById('capable-interpretation').textContent = getInterpretation('capable', capableAvg);
+
+        // Déterminer le type de joueur
+        const playerType = determinePlayerType(veutAvg, peutAvg, capableAvg);
+        document.getElementById('player-type').textContent = playerType;
+
+        // Positionner sur le quadrant
+        // Si c'est un détracteur (D), placer en dessous du quadrant
+        if (playerType === "D") {
+          const x = 50; // Au milieu en X
+          const y = 110; // En dessous du quadrant
+          
+          const marker = document.getElementById('position-marker');
+          marker.style.left = x + '%';
+          marker.style.top = y + '%';
+        } else {
+          const x = peutAvg;  // Performance sur l'axe X
+          const y = (veutAvg * 0.6 + capableAvg * 0.4);  // Pondération : 60% alignement, 40% potentiel
+          
+          const xPos = (x / 10) * 100;
+          const yPos = (1 - y / 10) * 100; // Inverser l'axe Y pour que 10 soit en haut
+          
+          const marker = document.getElementById('position-marker');
+          marker.style.left = xPos + '%';
+          marker.style.top = yPos + '%';
+        }
+
+        // Couleur du marqueur selon le type de joueur
+        const colors = {
+          "A+": "#006400",
+          "A": "#32CD32",
+          "B+": "#FFD700",
+          "B": "#FFA500",
+          "C": "#FF0000",
+          "D": "#800000"
+        };
+        
+        const marker = document.getElementById('position-marker');
+        marker.style.backgroundColor = colors[playerType] || "#333";
+
+        // Afficher la recommandation
+        document.getElementById('recommendation-text').textContent = getRecommendation(playerType);
+
+        // Mettre à jour le nom de l'employé
+        const employeeName = document.getElementById('employee-name').value;
+        document.getElementById('employee-name-result').textContent = employeeName;
+        document.getElementById('employee-name-rec').textContent = employeeName;
+
+        // Afficher les résultats
+        document.getElementById('results').style.display = 'block';
+        
+        // Faire défiler jusqu'aux résultats
+        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+      }
+    });
+  </script>
+</body>
+</html>

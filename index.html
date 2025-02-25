@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Évaluation des talents - GAM</title>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     :root {
       --primary-color: #f89c27;
@@ -493,11 +494,14 @@
     @media print {
       body {
         background-color: white;
+        padding: 0;
+        margin: 0;
       }
       
       .container {
         max-width: 100%;
         padding: 0;
+        margin: 0;
       }
       
       header, .section, #results {
@@ -505,20 +509,46 @@
         margin-bottom: 20px;
       }
       
-      .buttons-container {
-        display: none;
+      .buttons-container, #evaluation-form, #print-button, #export-button {
+        display: none !important;
       }
       
       .section-header {
         break-inside: avoid;
       }
       
-      #evaluation-form {
-        display: none;
+      body:not(.print-pdf-mode) #evaluation-form {
+        display: block !important;
+      }
+      
+      body.print-pdf-mode #evaluation-form {
+        display: none !important;
       }
       
       #results {
         display: block !important;
+        margin: 0;
+        padding: 0;
+      }
+      
+      .results-header {
+        break-after: avoid;
+      }
+      
+      /* Assurez-vous que tout est visible et bien formaté */
+      table, tr, td, th {
+        page-break-inside: avoid;
+      }
+      
+      .chart-container {
+        page-break-before: always;
+      }
+      
+      footer {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        text-align: center;
       }
     }
   </style>
@@ -1195,9 +1225,80 @@
       window.print();
     });
     
-    // Export functionality (placeholder - would require additional libraries in a real implementation)
+    // Export functionality with manual instructions
     document.getElementById('export-button').addEventListener('click', function() {
-      alert("Dans une implémentation réelle, cette fonction générerait un PDF à partir des données d'évaluation.");
+      // Create a modal with instructions
+      const modal = document.createElement('div');
+      modal.style.position = 'fixed';
+      modal.style.top = '0';
+      modal.style.left = '0';
+      modal.style.width = '100%';
+      modal.style.height = '100%';
+      modal.style.backgroundColor = 'rgba(0,0,0,0.7)';
+      modal.style.zIndex = '9999';
+      modal.style.display = 'flex';
+      modal.style.justifyContent = 'center';
+      modal.style.alignItems = 'center';
+      
+      const modalContent = document.createElement('div');
+      modalContent.style.backgroundColor = 'white';
+      modalContent.style.padding = '30px';
+      modalContent.style.borderRadius = '10px';
+      modalContent.style.maxWidth = '500px';
+      modalContent.style.textAlign = 'center';
+      
+      modalContent.innerHTML = `
+        <h3 style="margin-top: 0;">Exporter en PDF</h3>
+        <p>Pour créer un PDF de cette évaluation, veuillez suivre ces étapes :</p>
+        <ol style="text-align: left;">
+          <li>Appuyez sur <strong>Ctrl+P</strong> (Windows) ou <strong>Cmd+P</strong> (Mac) pour ouvrir la boîte de dialogue d'impression.</li>
+          <li>Sélectionnez "Enregistrer au format PDF" ou "Microsoft Print to PDF" comme destination.</li>
+          <li>Vérifiez que seuls les résultats sont affichés dans l'aperçu (le formulaire sera automatiquement masqué).</li>
+          <li>Cliquez sur "Enregistrer" ou "Imprimer" pour générer le PDF.</li>
+        </ol>
+        <p style="background-color: #f8f8f8; padding: 10px; border-left: 3px solid var(--primary-color);">
+          <strong>Astuce :</strong> Vous pouvez ajuster les marges et l'orientation dans les paramètres d'impression pour optimiser la mise en page.
+        </p>
+        <button id="prepare-print" style="background-color: var(--primary-color); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px;">Préparer pour l'impression</button>
+        <p style="margin-top: 15px; font-size: 12px; color: #666;">
+          Cliquez sur "Préparer pour l'impression" puis utilisez les raccourcis clavier mentionnés ci-dessus.
+        </p>
+      `;
+      
+      modal.appendChild(modalContent);
+      document.body.appendChild(modal);
+      
+      // Prepare for print (hide form, show only results)
+      document.getElementById('prepare-print').addEventListener('click', function() {
+        document.body.classList.add('print-pdf-mode');
+        document.body.removeChild(modal);
+        
+        // Scroll to results for better visibility
+        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        
+        // Show confirmation message
+        const printMsg = document.createElement('div');
+        printMsg.style.position = 'fixed';
+        printMsg.style.top = '20px';
+        printMsg.style.left = '50%';
+        printMsg.style.transform = 'translateX(-50%)';
+        printMsg.style.backgroundColor = 'var(--primary-color)';
+        printMsg.style.color = 'white';
+        printMsg.style.padding = '15px 20px';
+        printMsg.style.borderRadius = '5px';
+        printMsg.style.boxShadow = '0 3px 10px rgba(0,0,0,0.2)';
+        printMsg.style.zIndex = '9999';
+        printMsg.innerHTML = '<strong>Prêt pour l\'impression !</strong> Utilisez Ctrl+P ou Cmd+P pour imprimer.';
+        
+        document.body.appendChild(printMsg);
+        
+        // Remove message after 8 seconds
+        setTimeout(function() {
+          if (document.body.contains(printMsg)) {
+            document.body.removeChild(printMsg);
+          }
+        }, 8000);
+      });
     });
     
     // Main evaluation function

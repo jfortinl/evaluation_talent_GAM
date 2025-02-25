@@ -3,553 +3,1638 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Système d'Évaluation des Talents</title>
+  <title>Évaluation des talents - GAM</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
   <style>
+    :root {
+      --primary-color: #f89c27;
+      --primary-light: #fff1e0;
+      --secondary-color: #000000;
+      --secondary-light: #f2f2f2;
+      --tertiary-color: #f89c27;
+      --tertiary-light: #fff8ee;
+      --neutral-light: #f8f9fa;
+      --neutral-medium: #e9ecef;
+      --neutral-dark: #121212;
+      --border-radius: 8px;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --transition: all 0.3s ease;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
     body {
-      font-family: Arial, sans-serif;
-      max-width: 900px;
+      font-family: 'Segoe UI', 'Roboto', sans-serif;
+      color: var(--neutral-dark);
+      background-color: #f5f7fa;
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 1200px;
       margin: 0 auto;
       padding: 20px;
-      line-height: 1.5;
     }
-    h1 {
-      font-size: 24px;
-      margin-bottom: 20px;
-      color: #333;
-    }
-    h2 {
-      font-size: 20px;
-      margin-top: 25px;
-      margin-bottom: 15px;
-      color: #444;
-    }
-    .section {
+    
+    header {
+      background-color: white;
+      box-shadow: var(--shadow);
+      padding: 20px;
       margin-bottom: 30px;
+      border-radius: var(--border-radius);
+    }
+    
+    h1, h2, h3 {
+      font-weight: 600;
+      line-height: 1.3;
+    }
+    
+    h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+      color: var(--secondary-color);
+      border-bottom: 3px solid var(--primary-color);
+      padding-bottom: 10px;
+      display: inline-block;
+    }
+    
+    h2 {
+      font-size: 22px;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      color: var(--secondary-color);
+    }
+    
+    h3 {
+      font-size: 18px;
+      margin-bottom: 15px;
+    }
+    
+    .employee-info {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+    
+    .form-group {
+      flex: 1 0 300px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+    
+    input, select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ced4da;
+      border-radius: var(--border-radius);
+      font-size: 16px;
+      transition: var(--transition);
+    }
+    
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(0, 86, 179, 0.25);
+    }
+    
+    .section {
+      background-color: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      margin-bottom: 30px;
+      overflow: hidden;
+    }
+    
+    .section-header {
+      padding: 15px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .veut-section .section-header {
+      background-color: var(--primary-light);
+      border-left: 4px solid var(--primary-color);
+    }
+    
+    .peut-section .section-header {
+      background-color: var(--secondary-light);
+      border-left: 4px solid var(--secondary-color);
+    }
+    
+    .capable-section .section-header {
+      background-color: var(--tertiary-light);
+      border-left: 4px solid var(--tertiary-color);
+    }
+    
+    .section-content {
+      padding: 20px;
+    }
+    
+    .criteria-block {
+      background-color: var(--neutral-light);
+      border-radius: var(--border-radius);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    
+    .criteria-name {
+      background-color: var(--neutral-medium);
+      padding: 12px 15px;
+      font-weight: 600;
+      font-size: 16px;
+      border-left: 3px solid var(--primary-color);
+    }
+    
+    .levels-container {
       padding: 15px;
-      border-radius: 8px;
     }
-    .veut-section {
-      background-color: #e6f2ff;
+    
+    .level-option {
+      display: flex;
+      align-items: flex-start;
+      padding: 12px;
+      border-radius: var(--border-radius);
+      margin-bottom: 8px;
+      transition: var(--transition);
     }
-    .peut-section {
-      background-color: #e6ffe6;
+    
+    .level-option:hover {
+      background-color: #f0f0f0;
     }
-    .capable-section {
-      background-color: #fff9e6;
+    
+    .level-option input[type="radio"] {
+      width: auto;
+      margin-right: 10px;
+      margin-top: 3px;
     }
+    
+    .level-number {
+      font-weight: 600;
+      display: inline-block;
+      margin-right: 8px;
+      min-width: 70px;
+    }
+    
+    .buttons-container {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin: 30px 0;
+    }
+    
+    .btn {
+      padding: 12px 24px;
+      border-radius: var(--border-radius);
+      border: none;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-width: 150px;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+      font-weight: 500;
+    }
+    
+    .btn-primary:hover {
+      background-color: #e58b16;
+    }
+    
+    .btn-outline {
+      background-color: transparent;
+      border: 2px solid var(--secondary-color);
+      color: var(--secondary-color);
+      font-weight: 500;
+    }
+    
+    .btn-outline:hover {
+      background-color: var(--secondary-light);
+    }
+    
+    #results {
+      display: none;
+      background-color: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      margin-top: 30px;
+      overflow: hidden;
+      padding-bottom: 30px;
+    }
+    
+    .results-header {
+      background-color: var(--secondary-color);
+      color: white;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-bottom: 4px solid var(--primary-color);
+    }
+    
+    .results-content {
+      padding: 0 20px;
+    }
+    
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
     }
+    
     th {
-      background-color: rgba(0, 0, 0, 0.1);
-      padding: 10px;
-      text-align: left;
-      font-weight: bold;
-    }
-    td {
-      padding: 10px;
-      border-bottom: 1px solid #ddd;
-    }
-    input[type="number"] {
-      width: 60px;
-      padding: 5px;
-      text-align: center;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    input[type="text"] {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      box-sizing: border-box;
-    }
-    button {
-      background-color: #0066cc;
+      background-color: var(--secondary-color);
       color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 16px;
-      margin-top: 20px;
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
     }
-    button:hover {
-      background-color: #0052a3;
+    
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #dee2e6;
     }
-    .results {
-      display: none;
-      margin-top: 30px;
-      padding: 20px;
-      background-color: #f5f5f5;
-      border-radius: 8px;
+    
+    .score-badge {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 15px;
+      font-weight: 600;
+      text-align: center;
+      min-width: 50px;
     }
+    
+    .score-high {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .score-medium {
+      background-color: rgba(248, 156, 39, 0.7);
+      color: white;
+    }
+    
+    .score-low {
+      background-color: rgba(0, 0, 0, 0.7);
+      color: white;
+    }
+    
+    .chart-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      margin: 30px 0;
+    }
+    
     .quadrant {
       position: relative;
       width: 400px;
       height: 400px;
-      margin: 30px auto;
-      border: 1px solid #ccc;
+      border: 1px solid #dee2e6;
+      border-radius: var(--border-radius);
       background-color: white;
+      box-shadow: var(--shadow);
     }
-    .axis-h {
+    
+    .axis-h, .axis-v {
       position: absolute;
+      background-color: #adb5bd;
+    }
+    
+    .axis-h {
       top: 50%;
       left: 0;
       right: 0;
       height: 1px;
-      background-color: #999;
     }
+    
     .axis-v {
-      position: absolute;
       left: 50%;
       top: 0;
       bottom: 0;
       width: 1px;
-      background-color: #999;
     }
-    .q1 {
+    
+    .quadrant-label {
       position: absolute;
-      top: 0;
-      right: 0;
+      font-size: 14px;
+      font-weight: 500;
+      color: #6c757d;
+    }
+    
+    .label-top { top: 15px; left: 50%; transform: translateX(-50%); }
+    .label-bottom { bottom: 15px; left: 50%; transform: translateX(-50%); }
+    .label-left { left: 15px; top: 50%; transform: translateY(-50%) rotate(-90deg); }
+    .label-right { right: 15px; top: 50%; transform: translateY(-50%) rotate(90deg); }
+    
+    .quadrant-area {
+      position: absolute;
       width: 50%;
       height: 50%;
-      background-color: rgba(50, 205, 50, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 500;
+      color: rgba(0, 0, 0, 0.5);
+      font-size: 14px;
     }
-    .q2 {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 50%;
-      height: 50%;
-      background-color: rgba(255, 215, 0, 0.1);
-    }
-    .q3 {
-      position: absolute;
-      bottom: 0;
-      right: 0;
-      width: 50%;
-      height: 50%;
-      background-color: rgba(255, 165, 0, 0.1);
-    }
-    .q4 {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 50%;
-      height: 50%;
-      background-color: rgba(255, 0, 0, 0.1);
-    }
+    
+    .q1 { top: 0; right: 0; background-color: rgba(248, 156, 39, 0.2); }
+    .q2 { top: 0; left: 0; background-color: rgba(248, 156, 39, 0.1); }
+    .q3 { bottom: 0; left: 0; background-color: rgba(0, 0, 0, 0.1); }
+    .q4 { bottom: 0; right: 0; background-color: rgba(248, 156, 39, 0.15); }
+    
     .position-marker {
       position: absolute;
       width: 20px;
       height: 20px;
       border-radius: 50%;
-      background-color: red;
+      background-color: var(--primary-color);
       transform: translate(-50%, -50%);
+      z-index: 10;
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.7), 0 0 10px rgba(0,0,0,0.3);
+      transition: var(--transition);
     }
-    .label {
-      position: absolute;
-      font-size: 12px;
+    
+    .summary-metrics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 30px;
     }
-    .label-top {
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
+    
+    .metric-card {
+      flex: 1 0 200px;
+      background-color: white;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      text-align: center;
     }
-    .label-bottom {
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-    }
-    .label-left {
-      left: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-    }
-    .label-right {
-      right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-    }
-    .quadrant-label {
-      position: absolute;
-      font-weight: bold;
+    
+    .metric-title {
       font-size: 14px;
-    }
-    .q1-label {
-      top: 25%;
-      right: 25%;
-      transform: translate(50%, -50%);
-    }
-    .q2-label {
-      top: 25%;
-      left: 25%;
-      transform: translate(-50%, -50%);
-    }
-    .q3-label {
-      bottom: 25%;
-      right: 25%;
-      transform: translate(50%, 50%);
-    }
-    .q4-label {
-      bottom: 25%;
-      left: 25%;
-      transform: translate(-50%, 50%);
-    }
-    .recommendations {
-      margin-top: 20px;
-      padding: 15px;
-      background-color: #e6f7ff;
-      border: 1px solid #91d5ff;
-      border-radius: 4px;
-    }
-    .player-type {
-      font-size: 18px;
-      font-weight: bold;
+      color: #6c757d;
       margin-bottom: 10px;
     }
-    .legend {
-      margin-top: 20px;
+    
+    .metric-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary-color);
+      text-shadow: 1px 1px 1px rgba(0,0,0,0.1);
     }
-    .legend ul {
-      padding-left: 20px;
+    
+    .metric-subtitle {
+      font-size: 14px;
+      margin-top: 5px;
+    }
+    
+    .recommendations {
+      background-color: var(--primary-light);
+      border-left: 4px solid var(--primary-color);
+      padding: 20px;
+      border-radius: 0 var(--border-radius) var(--border-radius) 0;
+      margin: 30px 0;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .recommendation-title {
+      font-weight: 600;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .actions-section {
+      margin-top: 40px;
+    }
+    
+    .action-item {
+      display: flex;
+      margin-bottom: 15px;
+      background-color: var(--neutral-light);
+      border-radius: var(--border-radius);
+      overflow: hidden;
+    }
+    
+    .action-icon {
+      background-color: var(--neutral-medium);
+      padding: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 50px;
+    }
+    
+    .action-content {
+      padding: 15px;
+      flex-grow: 1;
+    }
+    
+    .action-title {
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+    
+    footer {
+      text-align: center;
+      margin-top: 50px;
+      padding: 20px;
+      color: #6c757d;
+      font-size: 14px;
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        padding: 15px;
+      }
+      
+      .quadrant {
+        width: 100%;
+        height: 300px;
+      }
+      
+      .buttons-container {
+        flex-direction: column;
+      }
+      
+      .btn {
+        width: 100%;
+      }
+    }
+    
+    /* Animation */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.4s ease forwards;
+    }
+    
+    /* Print styles */
+    @media print {
+      body {
+        background-color: white;
+      }
+      
+      .container {
+        max-width: 100%;
+        padding: 0;
+      }
+      
+      header, .section, #results {
+        box-shadow: none;
+        margin-bottom: 20px;
+      }
+      
+      .buttons-container {
+        display: none;
+      }
+      
+      .section-header {
+        break-inside: avoid;
+      }
+      
+      #evaluation-form {
+        display: none;
+      }
+      
+      #results {
+        display: block !important;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>Système d'Évaluation des Talents</h1>
-  
-  <div>
-    <label for="employee-name"><strong>Nom de l'employé :</strong></label>
-    <input type="text" id="employee-name" value="Employé test" required>
-  </div>
-  
-  <div class="section veut-section">
-    <h2>Veut (Alignement avec les valeurs)</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Valeur / Question</th>
-          <th style="width: 100px;">Note (1-10)</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>AUDACE : Dans quelle mesure cet employé relève-t-il les défis avec enthousiasme ?</td>
-          <td><input type="number" min="1" max="10" value="5" class="veut-score" id="audace" required></td>
-        </tr>
-        <tr>
-          <td>RIGUEUR : À quel point cet employé s'assure-t-il de bien faire les choses du premier coup ?</td>
-          <td><input type="number" min="1" max="10" value="5" class="veut-score" id="rigueur" required></td>
-        </tr>
-        <tr>
-          <td>IMPACT : Comment cet employé contribue-t-il à créer un impact positif dans son travail ?</td>
-          <td><input type="number" min="1" max="10" value="5" class="veut-score" id="impact" required></td>
-        </tr>
-        <tr>
-          <td>EXCELLENCE ET INNOVATION : Dans quelle mesure cet employé cherche-t-il à s'améliorer et à innover quotidiennement ?</td>
-          <td><input type="number" min="1" max="10" value="5" class="veut-score" id="excellence" required></td>
-        </tr>
-        <tr>
-          <td>COHÉSION : Comment cet employé contribue-t-il au respect et à la confiance au sein de l'équipe ?</td>
-          <td><input type="number" min="1" max="10" value="5" class="veut-score" id="cohesion" required></td>
-        </tr>
-        <tr>
-          <td>EMPATHIE : À quel point cet employé fait-il preuve d'empathie envers les clients et ses collègues ?</td>
-          <td><input type="number" min="1" max="10" value="5" class="veut-score" id="empathie" required></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  
-  <div class="section peut-section">
-    <h2>Peut (Performance actuelle)</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Question</th>
-          <th style="width: 100px;">Note (1-10)</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>1. Sur une échelle de 1 à 10, comment évalueriez-vous la qualité du travail de cet employé ?</td>
-          <td><input type="number" min="1" max="10" value="5" class="peut-score" id="qualite" required></td>
-        </tr>
-        <tr>
-          <td>2. Dans quelle mesure cet employé atteint-il ses objectifs de performance ?</td>
-          <td><input type="number" min="1" max="10" value="5" class="peut-score" id="objectifs" required></td>
-        </tr>
-        <tr>
-          <td>3. Comment noteriez-vous la fiabilité et la constance de cet employé dans l'exécution de ses tâches ?</td>
-          <td><input type="number" min="1" max="10" value="5" class="peut-score" id="fiabilite" required></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  
-  <div class="section capable-section">
-    <h2>Capable (Potentiel de croissance)</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Question</th>
-          <th style="width: 100px;">Note (1-10)</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>1. À quel point cet employé a-t-il démontré sa capacité à apprendre et à s'adapter à de nouvelles situations ?</td>
-          <td><input type="number" min="1" max="10" value="5" class="capable-score" id="adaptation" required></td>
-        </tr>
-        <tr>
-          <td>2. Dans quelle mesure pensez-vous que cet employé pourrait assumer des responsabilités plus importantes ?</td>
-          <td><input type="number" min="1" max="10" value="5" class="capable-score" id="responsabilites" required></td>
-        </tr>
-        <tr>
-          <td>3. Comment évalueriez-vous le potentiel de leadership de cet employé ?</td>
-          <td><input type="number" min="1" max="10" value="5" class="capable-score" id="leadership" required></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  
-  <div style="text-align: center;">
-    <button id="evaluate-button">Évaluer</button>
-  </div>
-  
-  <div id="results" class="results">
-    <h2>Résultats d'évaluation pour <span id="employee-name-result">Employé test</span></h2>
+  <div class="container">
+    <header>
+      <h1>Évaluation des talents - GAM</h1>
+      <p>Système de gestion et d'évaluation des performances et du potentiel</p>
+    </header>
     
-    <table>
-      <thead>
-        <tr>
-          <th>Critère</th>
-          <th style="width: 100px; text-align: center;">Moyenne</th>
-          <th>Interprétation</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>Veut (Alignement)</strong></td>
-          <td style="text-align: center;"><span id="veut-avg">-</span></td>
-          <td><span id="veut-interpretation">-</span></td>
-        </tr>
-        <tr>
-          <td><strong>Peut (Performance)</strong></td>
-          <td style="text-align: center;"><span id="peut-avg">-</span></td>
-          <td><span id="peut-interpretation">-</span></td>
-        </tr>
-        <tr>
-          <td><strong>Capable (Potentiel)</strong></td>
-          <td style="text-align: center;"><span id="capable-avg">-</span></td>
-          <td><span id="capable-interpretation">-</span></td>
-        </tr>
-      </tbody>
-    </table>
+    <form id="evaluation-form">
+      <div class="employee-info">
+        <div class="form-group">
+          <label for="employee-name">Nom de l'employé</label>
+          <input type="text" id="employee-name" value="Jean Dupont" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="employee-position">Poste</label>
+          <input type="text" id="employee-position" value="Développeur Senior">
+        </div>
+        
+        <div class="form-group">
+          <label for="evaluation-date">Date d'évaluation</label>
+          <input type="date" id="evaluation-date" value="">
+        </div>
+      </div>
+      
+      <!-- SECTION VEUT -->
+      <div class="section veut-section">
+        <div class="section-header">
+          <h2>Veut (Alignement avec les valeurs)</h2>
+        </div>
+        
+        <div class="section-content">
+          <div class="criteria-block">
+            <div class="criteria-name">AUDACE : Dans quelle mesure cet employé relève-t-il les défis avec enthousiasme ?</div>
+            <div class="levels-container">
+              <div class="level-option">
+                <input type="radio" name="audace" id="audace-1" value="1">
+                <label for="audace-1">
+                  <span class="level-number">Niveau 1:</span> Évite systématiquement les défis et les situations nouvelles
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="audace" id="audace-3" value="3">
+                <label for="audace-3">
+                  <span class="level-number">Niveau 3:</span> Accepte les défis quand on les lui présente mais sans enthousiasme
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="audace" id="audace-5" value="5" checked>
+                <label for="audace-5">
+                  <span class="level-number">Niveau 5:</span> Relève volontairement les défis habituels
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="audace" id="audace-7" value="7">
+                <label for="audace-7">
+                  <span class="level-number">Niveau 7:</span> Recherche activement des défis pour se tester
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="audace" id="audace-10" value="10">
+                <label for="audace-10">
+                  <span class="level-number">Niveau 10:</span> Crée des opportunités de défi et inspire les autres à en faire autant
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <div class="criteria-block">
+            <div class="criteria-name">RIGUEUR : À quel point cet employé s'assure-t-il de bien faire les choses du premier coup ?</div>
+            <div class="levels-container">
+              <div class="level-option">
+                <input type="radio" name="rigueur" id="rigueur-1" value="1">
+                <label for="rigueur-1">
+                  <span class="level-number">Niveau 1:</span> Commet régulièrement des erreurs évitables et ne vérifie pas son travail
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="rigueur" id="rigueur-3" value="3">
+                <label for="rigueur-3">
+                  <span class="level-number">Niveau 3:</span> Corrige ses erreurs uniquement lorsqu'elles sont signalées
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="rigueur" id="rigueur-5" value="5" checked>
+                <label for="rigueur-5">
+                  <span class="level-number">Niveau 5:</span> Vérifie systématiquement son travail avant de le soumettre
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="rigueur" id="rigueur-7" value="7">
+                <label for="rigueur-7">
+                  <span class="level-number">Niveau 7:</span> Applique des méthodes structurées pour garantir la qualité de son travail
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="rigueur" id="rigueur-10" value="10">
+                <label for="rigueur-10">
+                  <span class="level-number">Niveau 10:</span> Développe des systèmes d'amélioration continue et les partage avec l'équipe
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <div class="criteria-block">
+            <div class="criteria-name">IMPACT : Comment cet employé contribue-t-il à créer un impact positif dans son travail ?</div>
+            <div class="levels-container">
+              <div class="level-option">
+                <input type="radio" name="impact" id="impact-1" value="1">
+                <label for="impact-1">
+                  <span class="level-number">Niveau 1:</span> Travaille sans considération de l'impact de ses actions
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="impact" id="impact-3" value="3">
+                <label for="impact-3">
+                  <span class="level-number">Niveau 3:</span> Considère occasionnellement l'impact de son travail
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="impact" id="impact-5" value="5" checked>
+                <label for="impact-5">
+                  <span class="level-number">Niveau 5:</span> Cherche régulièrement à créer un impact positif dans ses projets
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="impact" id="impact-7" value="7">
+                <label for="impact-7">
+                  <span class="level-number">Niveau 7:</span> Priorise systématiquement les actions à fort impact positif
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="impact" id="impact-10" value="10">
+                <label for="impact-10">
+                  <span class="level-number">Niveau 10:</span> Transforme son environnement de travail par l'impact exceptionnel de ses contributions
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <div class="criteria-block">
+            <div class="criteria-name">EXCELLENCE ET INNOVATION : Dans quelle mesure cet employé cherche-t-il à s'améliorer et à innover quotidiennement ?</div>
+            <div class="levels-container">
+              <div class="level-option">
+                <input type="radio" name="innovation" id="innovation-1" value="1">
+                <label for="innovation-1">
+                  <span class="level-number">Niveau 1:</span> Résiste au changement et aux nouvelles méthodes de travail
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="innovation" id="innovation-3" value="3">
+                <label for="innovation-3">
+                  <span class="level-number">Niveau 3:</span> Adopte les innovations proposées sans chercher activement à s'améliorer
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="innovation" id="innovation-5" value="5" checked>
+                <label for="innovation-5">
+                  <span class="level-number">Niveau 5:</span> S'efforce régulièrement d'améliorer ses compétences et méthodes de travail
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="innovation" id="innovation-7" value="7">
+                <label for="innovation-7">
+                  <span class="level-number">Niveau 7:</span> Propose activement des solutions innovantes aux problèmes rencontrés
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="innovation" id="innovation-10" value="10">
+                <label for="innovation-10">
+                  <span class="level-number">Niveau 10:</span> Cultive une culture d'excellence et d'innovation permanente dans son équipe
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <div class="criteria-block">
+            <div class="criteria-name">COHÉSION : Comment cet employé contribue-t-il au respect et à la confiance au sein de l'équipe ?</div>
+            <div class="levels-container">
+              <div class="level-option">
+                <input type="radio" name="cohesion" id="cohesion-1" value="1">
+                <label for="cohesion-1">
+                  <span class="level-number">Niveau 1:</span> Crée des tensions et mine la confiance au sein de l'équipe
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="cohesion" id="cohesion-3" value="3">
+                <label for="cohesion-3">
+                  <span class="level-number">Niveau 3:</span> Interagit de façon neutre sans impact particulier sur la cohésion
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="cohesion" id="cohesion-5" value="5" checked>
+                <label for="cohesion-5">
+                  <span class="level-number">Niveau 5:</span> Contribue positivement à l'ambiance et aux relations dans l'équipe
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="cohesion" id="cohesion-7" value="7">
+                <label for="cohesion-7">
+                  <span class="level-number">Niveau 7:</span> Favorise activement le respect mutuel et résout les tensions
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="cohesion" id="cohesion-10" value="10">
+                <label for="cohesion-10">
+                  <span class="level-number">Niveau 10:</span> Catalyse une confiance exceptionnelle et une cohésion remarquable dans l'organisation
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <div class="criteria-block">
+            <div class="criteria-name">EMPATHIE : À quel point cet employé fait-il preuve d'empathie envers les clients et ses collègues ?</div>
+            <div class="levels-container">
+              <div class="level-option">
+                <input type="radio" name="empathie" id="empathie-1" value="1">
+                <label for="empathie-1">
+                  <span class="level-number">Niveau 1:</span> Néglige les besoins et perspectives des autres
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="empathie" id="empathie-3" value="3">
+                <label for="empathie-3">
+                  <span class="level-number">Niveau 3:</span> Reconnaît les besoins des autres quand ils sont explicitement exprimés
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="empathie" id="empathie-5" value="5" checked>
+                <label for="empathie-5">
+                  <span class="level-number">Niveau 5:</span> Fait preuve de compréhension envers les clients et collègues
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="empathie" id="empathie-7" value="7">
+                <label for="empathie-7">
+                  <span class="level-number">Niveau 7:</span> Anticipe les besoins et adapte son approche en conséquence
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="empathie" id="empathie-10" value="10">
+                <label for="empathie-10">
+                  <span class="level-number">Niveau 10:</span> Crée des relations profondes basées sur une compréhension exceptionnelle des autres
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- SECTION PEUT -->
+      <div class="section peut-section">
+        <div class="section-header">
+          <h2>Peut (Performance actuelle)</h2>
+        </div>
+        
+        <div class="section-content">
+          <div class="criteria-block">
+            <div class="criteria-name">Qualité du travail</div>
+            <div class="levels-container">
+              <div class="level-option">
+                <input type="radio" name="qualite" id="qualite-1" value="1">
+                <label for="qualite-1">
+                  <span class="level-number">Niveau 1:</span> Travail de qualité insuffisante nécessitant des corrections majeures
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="qualite" id="qualite-3" value="3">
+                <label for="qualite-3">
+                  <span class="level-number">Niveau 3:</span> Travail acceptable mais nécessitant des améliorations
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="qualite" id="qualite-5" value="5" checked>
+                <label for="qualite-5">
+                  <span class="level-number">Niveau 5:</span> Travail de bonne qualité répondant aux standards attendus
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="qualite" id="qualite-7" value="7">
+                <label for="qualite-7">
+                  <span class="level-number">Niveau 7:</span> Travail de haute qualité dépassant régulièrement les attentes
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="qualite" id="qualite-10" value="10">
+                <label for="qualite-10">
+                  <span class="level-number">Niveau 10:</span> Travail exemplaire établissant de nouvelles normes d'excellence
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <div class="criteria-block">
+            <div class="criteria-name">Atteinte des objectifs</div>
+            <div class="levels-container">
+              <div class="level-option">
+                <input type="radio" name="objectifs" id="objectifs-1" value="1">
+                <label for="objectifs-1">
+                  <span class="level-number">Niveau 1:</span> N'atteint pas la plupart des objectifs fixés
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="objectifs" id="objectifs-3" value="3">
+                <label for="objectifs-3">
+                  <span class="level-number">Niveau 3:</span> Atteint partiellement les objectifs mais manque de constance
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="objectifs" id="objectifs-5" value="5" checked>
+                <label for="objectifs-5">
+                  <span class="level-number">Niveau 5:</span> Atteint régulièrement les objectifs fixés
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="objectifs" id="objectifs-7" value="7">
+                <label for="objectifs-7">
+                  <span class="level-number">Niveau 7:</span> Dépasse souvent les objectifs fixés
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="objectifs" id="objectifs-10" value="10">
+                <label for="objectifs-10">
+                  <span class="level-number">Niveau 10:</span> Surpasse systématiquement les objectifs et se fixe des défis supplémentaires
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <div class="criteria-block">
+            <div class="criteria-name">Résolution de problèmes</div>
+            <div class="levels-container">
+              <div class="level-option">
+                <input type="radio" name="problemes" id="problemes-1" value="1">
+                <label for="problemes-1">
+                  <span class="level-number">Niveau 1:</span> Évite de traiter les problèmes ou les délègue systématiquement
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="problemes" id="problemes-3" value="3">
+                <label for="problemes-3">
+                  <span class="level-number">Niveau 3:</span> Résout des problèmes simples mais a besoin d'aide pour les situations complexes
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="problemes" id="problemes-5" value="5" checked>
+                <label for="problemes-5">
+                  <span class="level-number">Niveau 5:</span> Analyse méthodiquement les problèmes et trouve des solutions appropriées
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="problemes" id="problemes-7" value="7">
+                <label for="problemes-7">
+                  <span class="level-number">Niveau 7:</span> Développe des approches innovantes pour résoudre des problèmes complexes
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="problemes" id="problemes-10" value="10">
+                <label for="problemes-10">
+                  <span class="level-number">Niveau 10:</span> Anticipe les problèmes potentiels et développe des solutions préventives
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- SECTION CAPABLE -->
+      <div class="section capable-section">
+        <div class="section-header">
+          <h2>Capable (Potentiel de croissance)</h2>
+        </div>
+        
+        <div class="section-content">
+          <div class="criteria-block">
+            <div class="criteria-name">Capacité d'apprentissage et d'adaptation</div>
+            <div class="levels-container">
+              <div class="level-option">
+                <input type="radio" name="adaptation" id="adaptation-1" value="1">
+                <label for="adaptation-1">
+                  <span class="level-number">Niveau 1:</span> Résiste au changement et à l'acquisition de nouvelles compétences
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="adaptation" id="adaptation-3" value="3">
+                <label for="adaptation-3">
+                  <span class="level-number">Niveau 3:</span> Apprend lentement et s'adapte avec difficulté aux nouvelles situations
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="adaptation" id="adaptation-5" value="5" checked>
+                <label for="adaptation-5">
+                  <span class="level-number">Niveau 5:</span> Apprend et s'adapte à un rythme satisfaisant
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="adaptation" id="adaptation-7" value="7">
+                <label for="adaptation-7">
+                  <span class="level-number">Niveau 7:</span> Apprend rapidement et s'adapte efficacement aux situations changeantes
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="adaptation" id="adaptation-10" value="10">
+                <label for="adaptation-10">
+                  <span class="level-number">Niveau 10:</span> Démontre une capacité exceptionnelle à acquérir de nouvelles compétences et à s'adapter
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <div class="criteria-block">
+            <div class="criteria-name">Potentiel de leadership</div>
+            <div class="levels-container">
+              <div class="level-option">
+                <input type="radio" name="leadership" id="leadership-1" value="1">
+                <label for="leadership-1">
+                  <span class="level-number">Niveau 1:</span> Ne montre aucune qualité de leadership et préfère suivre les autres
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="leadership" id="leadership-3" value="3">
+                <label for="leadership-3">
+                  <span class="level-number">Niveau 3:</span> Montre occasionnellement des qualités de leadership dans des situations limitées
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="leadership" id="leadership-5" value="5" checked>
+                <label for="leadership-5">
+                  <span class="level-number">Niveau 5:</span> A le potentiel pour diriger des projets ou des petites équipes
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="leadership" id="leadership-7" value="7">
+                <label for="leadership-7">
+                  <span class="level-number">Niveau 7:</span> Inspire naturellement les autres et influence positivement l'équipe
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="leadership" id="leadership-10" value="10">
+                <label for="leadership-10">
+                  <span class="level-number">Niveau 10:</span> Démontre un potentiel de leadership exceptionnel qui transforme l'organisation
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <div class="criteria-block">
+            <div class="criteria-name">Vision stratégique</div>
+            <div class="levels-container">
+              <div class="level-option">
+                <input type="radio" name="vision" id="vision-1" value="1">
+                <label for="vision-1">
+                  <span class="level-number">Niveau 1:</span> Se concentre uniquement sur les tâches immédiates sans vision d'ensemble
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="vision" id="vision-3" value="3">
+                <label for="vision-3">
+                  <span class="level-number">Niveau 3:</span> Comprend les objectifs à court terme mais manque de perspective à long terme
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="vision" id="vision-5" value="5" checked>
+                <label for="vision-5">
+                  <span class="level-number">Niveau 5:</span> Établit des liens entre son travail et les objectifs plus larges de l'entreprise
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="vision" id="vision-7" value="7">
+                <label for="vision-7">
+                  <span class="level-number">Niveau 7:</span> Propose des idées qui contribuent significativement à la stratégie de l'entreprise
+                </label>
+              </div>
+              <div class="level-option">
+                <input type="radio" name="vision" id="vision-10" value="10">
+                <label for="vision-10">
+                  <span class="level-number">Niveau 10:</span> Possède une vision stratégique exceptionnelle qui ouvre de nouvelles opportunités
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
     
-    <h3>Positionnement: Joueur de type <span id="player-type">-</span></h3>
-    
-    <div class="quadrant">
-      <div class="axis-h"></div>
-      <div class="axis-v"></div>
-      <div class="q1"></div>
-      <div class="q2"></div>
-      <div class="q3"></div>
-      <div class="q4"></div>
-      <div class="label label-top">Potentiel élevé</div>
-      <div class="label label-bottom">Potentiel faible</div>
-      <div class="label label-left">Performance faible</div>
-      <div class="label label-right">Performance élevée</div>
-      <div class="quadrant-label q1-label">A+/A</div>
-      <div class="quadrant-label q2-label">B+</div>
-      <div class="quadrant-label q3-label">B</div>
-      <div class="quadrant-label q4-label">C</div>
-      <div class="quadrant-label" style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); color: #800000;">D: Détracteur (sous le quadrant)</div>
-      <div id="position-marker" class="position-marker" style="left: 50%; top: 50%"></div>
+    <div class="buttons-container">
+      <button type="button" id="reset-button" class="btn btn-outline">
+        Réinitialiser
+      </button>
+      <button type="button" id="evaluate-button" class="btn btn-primary">
+        Évaluer
+      </button>
     </div>
     
-    <div class="legend">
-      <h4>Interprétation :</h4>
-      <ul>
-        <li><strong style="color: #006400;">A+/A</strong> : Talents exceptionnels à fort potentiel et haute performance</li>
-        <li><strong style="color: #B8860B;">B+</strong> : Bon potentiel mais performance à améliorer</li>
-        <li><strong style="color: #FF8C00;">B</strong> : Performance correcte, potentiel modéré</li>
-        <li><strong style="color: #B22222;">C</strong> : Performance insuffisante. Réévaluer le fit avec le poste actuel</li>
-        <li><strong style="color: #800000;">D</strong> : Détracteur - Désalignement avec les valeurs fondamentales</li>
-      </ul>
+    <div id="results">
+      <div class="results-header">
+        <h2>Résultats d'évaluation</h2>
+        <p id="employee-info-result">Jean Dupont • Développeur Senior • 25 février 2025</p>
+      </div>
+      
+      <div class="results-content">
+        <div class="summary-metrics">
+          <div class="metric-card">
+            <div class="metric-title">Score global</div>
+            <div class="metric-value">B+</div>
+            <div class="metric-subtitle">Talent prometteur</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-title">Veut</div>
+            <div class="metric-value" id="veut-avg">5.0</div>
+            <div class="metric-subtitle" id="veut-interpretation">Alignement moyen avec les valeurs</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-title">Peut</div>
+            <div class="metric-value" id="peut-avg">5.0</div>
+            <div class="metric-subtitle" id="peut-interpretation">Performance acceptable</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-title">Capable</div>
+            <div class="metric-value" id="capable-avg">5.0</div>
+            <div class="metric-subtitle" id="capable-interpretation">Potentiel de croissance moyen</div>
+          </div>
+        </div>
+        
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 25%;">Dimension</th>
+              <th style="width: 15%;">Score</th>
+              <th>Évaluation détaillée</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Veut (Alignement)</strong></td>
+              <td><span id="veut-badge" class="score-badge score-medium">5.0</span></td>
+              <td id="veut-details">Alignement moyen avec les valeurs de l'entreprise. Démontre une bonne volonté mais pourrait davantage s'approprier les valeurs fondamentales.</td>
+            </tr>
+            <tr>
+              <td><strong>Peut (Performance)</strong></td>
+              <td><span id="peut-badge" class="score-badge score-medium">5.0</span></td>
+              <td id="peut-details">Performance satisfaisante, atteint régulièrement les objectifs fixés et produit un travail de qualité qui répond aux standards attendus.</td>
+            </tr>
+            <tr>
+              <td><strong>Capable (Potentiel)</strong></td>
+              <td><span id="capable-badge" class="score-badge score-medium">5.0</span></td>
+              <td id="capable-details">Montre un potentiel de croissance intéressant avec une capacité d'apprentissage satisfaisante et une vision stratégique en développement.</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <div class="chart-container">
+          <div class="quadrant">
+            <div class="axis-h"></div>
+            <div class="axis-v"></div>
+            <div class="quadrant-label label-top">Potentiel élevé</div>
+            <div class="quadrant-label label-bottom">Potentiel faible</div>
+            <div class="quadrant-label label-left">Performance faible</div>
+            <div class="quadrant-label label-right">Performance élevée</div>
+            
+            <div class="quadrant-area q1">Stars</div>
+            <div class="quadrant-area q2">Potentiels</div>
+            <div class="quadrant-area q3">Problématiques</div>
+            <div class="quadrant-area q4">Piliers</div>
+            
+            <div id="position-marker" class="position-marker" style="left: 50%; top: 50%"></div>
+          </div>
+          
+          <div>
+            <h3>Classification des talents:</h3>
+            <ul style="list-style-type: none; padding-left: 0;">
+              <li style="margin-bottom: 10px;">
+                <strong style="color: var(--primary-color); font-size: 18px;">A+</strong>: Talent exceptionnel (performance et potentiel excellents)
+              </li>
+              <li style="margin-bottom: 10px;">
+                <strong style="color: var(--primary-color);">A</strong>: Talent de grande valeur (excellente performance)
+              </li>
+              <li style="margin-bottom: 10px;">
+                <strong style="color: var(--primary-color);">B+</strong>: Talent prometteur (bon équilibre potentiel/performance)
+              </li>
+              <li style="margin-bottom: 10px;">
+                <strong style="color: var(--primary-color);">B</strong>: Talent solide (performance satisfaisante)
+              </li>
+              <li style="margin-bottom: 10px;">
+                <strong style="color: var(--secondary-color);">C</strong>: Talent à accompagner (performance insuffisante)
+              </li>
+              <li style="margin-bottom: 10px;">
+                <strong style="color: var(--secondary-color);">D</strong>: Désalignement important (misfit avec les valeurs)
+              </li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="recommendations">
+          <div class="recommendation-title">
+            Recommandation pour <span id="employee-name-rec">Jean Dupont</span> (Catégorie <span id="player-type-rec">B+</span>):
+          </div>
+          <p id="recommendation-text">
+            Bon potentiel à accompagner. Mettre en place un plan de développement ciblé pour améliorer la performance et l'alignement avec les valeurs de l'entreprise.
+          </p>
+        </div>
+        
+        <div class="actions-section">
+          <h3>Plan d'action recommandé</h3>
+          
+          <div id="action-items-container">
+            <div class="action-item">
+              <div class="action-icon">
+              </div>
+              <div class="action-content">
+                <div class="action-title">Formation sur les compétences techniques</div>
+                <div class="action-description">Proposer des formations pour renforcer les compétences spécifiques au poste.</div>
+              </div>
+            </div>
+            
+            <div class="action-item">
+              <div class="action-icon">
+              </div>
+              <div class="action-content">
+                <div class="action-title">Clarification des objectifs</div>
+                <div class="action-description">Établir des objectifs SMART et organiser des points d'étapes réguliers.</div>
+              </div>
+            </div>
+            
+            <div class="action-item">
+              <div class="action-icon">
+              </div>
+              <div class="action-content">
+                <div class="action-title">Mentorat</div>
+                <div class="action-description">Assigner un mentor pour favoriser l'intégration des valeurs et améliorer la performance.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="buttons-container">
+          <button type="button" id="print-button" class="btn btn-outline">
+            Imprimer
+          </button>
+          <button type="button" id="export-button" class="btn btn-primary">
+            Exporter en PDF
+          </button>
+        </div>
+      </div>
     </div>
     
-    <div class="recommendations">
-      <div class="player-type">Recommandation pour <span id="employee-name-rec">Employé test</span> :</div>
-      <p id="recommendation-text">-</p>
-    </div>
+    <footer>
+      <p>© 2025 GAM • Système d'Évaluation des Talents • Tous droits réservés</p>
+    </footer>
   </div>
 
   <script>
+    // Set current date as default
     document.addEventListener('DOMContentLoaded', function() {
-      const evaluateButton = document.getElementById('evaluate-button');
-      evaluateButton.addEventListener('click', evaluateEmployee);
-
-      function calculateAverage(className) {
-        const scores = Array.from(document.querySelectorAll('.' + className))
-          .map(input => parseInt(input.value) || 0);
-        return scores.reduce((sum, score) => sum + score, 0) / scores.length;
-      }
-
-      function getInterpretation(category, value) {
-        if (category === 'veut') {
-          if (value >= 8) return "Très fort alignement avec les valeurs";
-          if (value >= 6) return "Bon alignement avec les valeurs";
-          if (value >= 4) return "Alignement moyen avec les valeurs";
-          return "Faible alignement avec les valeurs";
-        }
-        else if (category === 'peut') {
-          if (value >= 8) return "Performance exceptionnelle";
-          if (value >= 6) return "Bonne performance";
-          if (value >= 4) return "Performance acceptable";
-          return "Performance insuffisante";
-        }
-        else if (category === 'capable') {
-          if (value >= 8) return "Potentiel de croissance très élevé";
-          if (value >= 6) return "Bon potentiel de croissance";
-          if (value >= 4) return "Potentiel de croissance moyen";
-          return "Potentiel de croissance limité";
-        }
-        return "";
-      }
-
-      function determinePlayerType(veut, peut, capable) {
-        // Si l'alignement avec les valeurs est trop faible, l'employé est considéré comme un détracteur
-        if (veut < 4) {
-          return "D"; // Détracteur - indépendamment des autres scores
-        }
-        
-        // Pour les autres cas
-        if (peut >= 7 && veut >= 7 && capable >= 7) {
-          return "A+";
-        } else if (peut >= 7 && ((veut >= 7 && capable >= 5) || (veut >= 5 && capable >= 7))) {
-          return "A";
-        } else if (peut >= 5 && veut >= 5 && capable >= 5) {
-          return "B+";
-        } else if (peut >= 5 && (veut >= 4 || capable >= 4)) {
-          return "B";
-        } else {
-          return "C";
-        }
-      }
-
-      function getRecommendation(playerType) {
-        switch(playerType) {
-          case "A+":
-            return "Talent exceptionnel à retenir absolument. Offrir des défis à la hauteur de son potentiel et des opportunités d'évolution rapide.";
-          case "A":
-            return "Excellent élément à développer et fidéliser. Proposer des responsabilités croissantes et un parcours de développement personnalisé.";
-          case "B+":
-            return "Bon potentiel à accompagner. Mettre en place un plan de développement ciblé pour améliorer la performance.";
-          case "B":
-            return "Collaborateur fiable. Clarifier les attentes et proposer des formations pour renforcer ses compétences.";
-          case "C":
-            return "Performance insuffisante. Réévaluer le fit avec le poste actuel ou envisager une réorientation.";
-          case "D":
-            return "Employé en désalignement avec les valeurs fondamentales de l'entreprise. Un plan de transition devrait être envisagé car le manque d'alignement avec les valeurs crée un effet détracteur dans l'organisation.";
-          default:
-            return "";
-        }
-      }
-
-      function evaluateEmployee() {
-        // Vérifier que toutes les entrées sont valides
-        const inputs = document.querySelectorAll('input[type="number"]');
-        let allValid = true;
-        inputs.forEach(input => {
-          const value = parseInt(input.value);
-          if (isNaN(value) || value < 1 || value > 10) {
-            allValid = false;
-            input.style.borderColor = 'red';
-          } else {
-            input.style.borderColor = '#ccc';
-          }
-        });
-
-        if (!allValid) {
-          alert("Veuillez remplir toutes les notes avec des valeurs entre 1 et 10.");
-          return;
-        }
-
-        // Donner plus de poids à l'alignement des valeurs
-        const veutScores = Array.from(document.querySelectorAll('.veut-score'))
-          .map(input => parseInt(input.value) || 0);
-        const veutAvg = veutScores.reduce((sum, score) => sum + score, 0) / veutScores.length;
-        
-        const peutAvg = calculateAverage('peut-score');
-        const capableAvg = calculateAverage('capable-score');
-
-        // Afficher les moyennes et interprétations
-        document.getElementById('veut-avg').textContent = veutAvg.toFixed(2);
-        document.getElementById('peut-avg').textContent = peutAvg.toFixed(2);
-        document.getElementById('capable-avg').textContent = capableAvg.toFixed(2);
-
-        document.getElementById('veut-interpretation').textContent = getInterpretation('veut', veutAvg);
-        document.getElementById('peut-interpretation').textContent = getInterpretation('peut', peutAvg);
-        document.getElementById('capable-interpretation').textContent = getInterpretation('capable', capableAvg);
-
-        // Déterminer le type de joueur
-        const playerType = determinePlayerType(veutAvg, peutAvg, capableAvg);
-        document.getElementById('player-type').textContent = playerType;
-
-        // Positionner sur le quadrant
-        // Si c'est un détracteur (D), placer en dessous du quadrant
-        if (playerType === "D") {
-          const x = 50; // Au milieu en X
-          const y = 110; // En dessous du quadrant
-          
-          const marker = document.getElementById('position-marker');
-          marker.style.left = x + '%';
-          marker.style.top = y + '%';
-        } else {
-          const x = peutAvg;  // Performance sur l'axe X
-          const y = (veutAvg * 0.6 + capableAvg * 0.4);  // Pondération : 60% alignement, 40% potentiel
-          
-          const xPos = (x / 10) * 100;
-          const yPos = (1 - y / 10) * 100; // Inverser l'axe Y pour que 10 soit en haut
-          
-          const marker = document.getElementById('position-marker');
-          marker.style.left = xPos + '%';
-          marker.style.top = yPos + '%';
-        }
-
-        // Couleur du marqueur selon le type de joueur
-        const colors = {
-          "A+": "#006400",
-          "A": "#32CD32",
-          "B+": "#FFD700",
-          "B": "#FFA500",
-          "C": "#FF0000",
-          "D": "#800000"
-        };
-        
-        const marker = document.getElementById('position-marker');
-        marker.style.backgroundColor = colors[playerType] || "#333";
-
-        // Afficher la recommandation
-        document.getElementById('recommendation-text').textContent = getRecommendation(playerType);
-
-        // Mettre à jour le nom de l'employé
-        const employeeName = document.getElementById('employee-name').value;
-        document.getElementById('employee-name-result').textContent = employeeName;
-        document.getElementById('employee-name-rec').textContent = employeeName;
-
-        // Afficher les résultats
-        document.getElementById('results').style.display = 'block';
-        
-        // Faire défiler jusqu'aux résultats
-        document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+      const today = new Date();
+      const formattedDate = today.toISOString().split('T')[0];
+      document.getElementById('evaluation-date').value = formattedDate;
+    });
+    
+    // Reset form
+    document.getElementById('reset-button').addEventListener('click', function() {
+      if (confirm("Êtes-vous sûr de vouloir réinitialiser le formulaire ? Toutes les données seront perdues.")) {
+        document.getElementById('evaluation-form').reset();
+        document.getElementById('results').style.display = 'none';
       }
     });
+    
+    // Print functionality
+    document.getElementById('print-button').addEventListener('click', function() {
+      window.print();
+    });
+    
+    // Export functionality (placeholder - would require additional libraries in a real implementation)
+    document.getElementById('export-button').addEventListener('click', function() {
+      alert("Dans une implémentation réelle, cette fonction générerait un PDF à partir des données d'évaluation.");
+    });
+    
+    // Main evaluation function
+    document.getElementById('evaluate-button').addEventListener('click', evaluateEmployee);
+    
+    function evaluateEmployee() {
+      // Get employee information
+      const employeeName = document.getElementById('employee-name').value || "Non spécifié";
+      const employeePosition = document.getElementById('employee-position').value || "Non spécifié";
+      const evaluationDate = document.getElementById('evaluation-date').value;
+      
+      // Format date for display
+      let formattedDate = "Date non spécifiée";
+      if (evaluationDate) {
+        const date = new Date(evaluationDate);
+        formattedDate = date.toLocaleDateString('fr-FR', { 
+          day: 'numeric', 
+          month: 'long', 
+          year: 'numeric' 
+        });
+      }
+      
+      // Update employee info in results
+      document.getElementById('employee-info-result').textContent = 
+        `${employeeName} • ${employeePosition} • ${formattedDate}`;
+      document.getElementById('employee-name-rec').textContent = employeeName;
+      
+      // Function to get the selected value from a group of radio buttons
+      function getSelectedValue(name) {
+        const radios = document.getElementsByName(name);
+        for (let i = 0; i < radios.length; i++) {
+          if (radios[i].checked) {
+            return parseInt(radios[i].value);
+          }
+        }
+        return 0;
+      }
+      
+      // Calculate averages for each dimension
+      // Veut section
+      const audaceScore = getSelectedValue('audace');
+      const rigueurScore = getSelectedValue('rigueur');
+      const impactScore = getSelectedValue('impact');
+      const innovationScore = getSelectedValue('innovation');
+      const cohesionScore = getSelectedValue('cohesion');
+      const empathieScore = getSelectedValue('empathie');
+      const veutAvg = (audaceScore + rigueurScore + impactScore + innovationScore + cohesionScore + empathieScore) / 6;
+      
+      // Peut section
+      const qualiteScore = getSelectedValue('qualite');
+      const objectifsScore = getSelectedValue('objectifs');
+      const problemesScore = getSelectedValue('problemes');
+      const peutAvg = (qualiteScore + objectifsScore + problemesScore) / 3;
+      
+      // Capable section
+      const adaptationScore = getSelectedValue('adaptation');
+      const leadershipScore = getSelectedValue('leadership');
+      const visionScore = getSelectedValue('vision');
+      const capableAvg = (adaptationScore + leadershipScore + visionScore) / 3;
+      
+      // Calculate composite score for better visualization
+      const compositeScore = (veutAvg * 0.3) + (peutAvg * 0.4) + (capableAvg * 0.3);
+      
+      // Display average scores
+      document.getElementById('veut-avg').textContent = veutAvg.toFixed(1);
+      document.getElementById('peut-avg').textContent = peutAvg.toFixed(1);
+      document.getElementById('capable-avg').textContent = capableAvg.toFixed(1);
+      
+      // Update score badges
+      updateScoreBadge('veut-badge', veutAvg);
+      updateScoreBadge('peut-badge', peutAvg);
+      updateScoreBadge('capable-badge', capableAvg);
+      
+      // Determine interpretations
+      document.getElementById('veut-interpretation').textContent = getInterpretation('veut', veutAvg);
+      document.getElementById('peut-interpretation').textContent = getInterpretation('peut', peutAvg);
+      document.getElementById('capable-interpretation').textContent = getInterpretation('capable', capableAvg);
+      
+      // Detailed interpretations
+      document.getElementById('veut-details').textContent = getDetailedInterpretation('veut', veutAvg, audaceScore, rigueurScore, impactScore, innovationScore, cohesionScore, empathieScore);
+      document.getElementById('peut-details').textContent = getDetailedInterpretation('peut', peutAvg, qualiteScore, objectifsScore, problemesScore);
+      document.getElementById('capable-details').textContent = getDetailedInterpretation('capable', capableAvg, adaptationScore, leadershipScore, visionScore);
+      
+      // Determine player type
+      const playerType = determinePlayerType(veutAvg, peutAvg, capableAvg);
+      
+      // Update player type in UI
+      document.querySelector('.metric-value').textContent = playerType;
+      document.querySelector('.metric-subtitle').textContent = getPlayerTypeDescription(playerType);
+      document.getElementById('player-type-rec').textContent = playerType;
+      
+      // Position on quadrant
+      positionOnQuadrant(playerType, peutAvg, capableAvg, veutAvg);
+      
+      // Update recommendation
+      document.getElementById('recommendation-text').textContent = getRecommendation(playerType);
+      
+      // Update action items
+      updateActionItems(playerType, veutAvg, peutAvg, capableAvg);
+      
+      // Show results with animation
+      document.getElementById('results').classList.remove('fade-in');
+      void document.getElementById('results').offsetWidth; // Trigger reflow
+      document.getElementById('results').classList.add('fade-in');
+      document.getElementById('results').style.display = 'block';
+      
+      // Scroll to results
+      document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    // Helper Functions
+    
+    function updateScoreBadge(elementId, score) {
+      const badge = document.getElementById(elementId);
+      badge.textContent = score.toFixed(1);
+      
+      // Update class based on score
+      badge.classList.remove('score-low', 'score-medium', 'score-high');
+      if (score >= 7) {
+        badge.classList.add('score-high');
+      } else if (score >= 4) {
+        badge.classList.add('score-medium');
+      } else {
+        badge.classList.add('score-low');
+      }
+    }
+    
+    function getInterpretation(category, value) {
+      if (category === 'veut') {
+        if (value >= 8) return "Très fort alignement avec les valeurs";
+        if (value >= 6) return "Bon alignement avec les valeurs";
+        if (value >= 4) return "Alignement moyen avec les valeurs";
+        return "Faible alignement avec les valeurs";
+      }
+      else if (category === 'peut') {
+        if (value >= 8) return "Performance exceptionnelle";
+        if (value >= 6) return "Bonne performance";
+        if (value >= 4) return "Performance acceptable";
+        return "Performance insuffisante";
+      }
+      else if (category === 'capable') {
+        if (value >= 8) return "Potentiel de croissance très élevé";
+        if (value >= 6) return "Bon potentiel de croissance";
+        if (value >= 4) return "Potentiel de croissance moyen";
+        return "Potentiel de croissance limité";
+      }
+      return "";
+    }
+    
+    function getDetailedInterpretation(category, avgScore, score1, score2, score3, score4, score5, score6) {
+      // Base interpretation from the average score
+      let baseInterpretation = getInterpretation(category, avgScore);
+      
+      // Additional detailed feedback based on individual scores
+      let details = "";
+      
+      if (category === 'veut') {
+        // Audace (score1)
+        if (score1 > avgScore + 2) {
+          details += " Excellente capacité à relever les défis avec enthousiasme.";
+        } else if (score1 < avgScore - 2) {
+          details += " Pourrait montrer plus d'audace face aux défis.";
+        }
+        
+        // Rigueur (score2)
+        if (score2 > avgScore + 2) {
+          details += " Excellente rigueur dans le travail.";
+        } else if (score2 < avgScore - 2) {
+          details += " La rigueur est un axe d'amélioration.";
+        }
+        
+        // Impact (score3)
+        if (score3 > avgScore + 2) {
+          details += " Crée un impact positif remarquable.";
+        } else if (score3 < avgScore - 2) {
+          details += " Pourrait renforcer l'impact de ses contributions.";
+        }
+        
+        // Innovation (score4)
+        if (score4 > avgScore + 2) {
+          details += " Recherche constante d'excellence et d'innovation.";
+        } else if (score4 < avgScore - 2) {
+          details += " Besoin de développer l'initiative d'innovation.";
+        }
+        
+        // Cohésion (score5)
+        if (score5 > avgScore + 2) {
+          details += " Excellente contribution à la cohésion d'équipe.";
+        } else if (score5 < avgScore - 2) {
+          details += " Pourrait mieux contribuer à la cohésion d'équipe.";
+        }
+        
+        // Empathie (score6)
+        if (score6 > avgScore + 2) {
+          details += " Fait preuve d'une empathie remarquable.";
+        } else if (score6 < avgScore - 2) {
+          details += " L'empathie est un axe de développement à privilégier.";
+        }
+      }
+      else if (category === 'peut') {
+        if (score1 > avgScore + 2) {
+          details += " Qualité de travail exemplaire.";
+        } else if (score1 < avgScore - 2) {
+          details += " La qualité du travail pourrait être améliorée.";
+        }
+        
+        if (score2 > avgScore + 2) {
+          details += " Atteint constamment ses objectifs.";
+        } else if (score2 < avgScore - 2) {
+          details += " L'atteinte des objectifs est à renforcer.";
+        }
+        
+        if (score3 > avgScore + 2) {
+          details += " Excellente capacité à résoudre les problèmes.";
+        } else if (score3 < avgScore - 2) {
+          details += " La résolution de problèmes est un axe de progression.";
+        }
+      }
+      else if (category === 'capable') {
+        if (score1 > avgScore + 2) {
+          details += " Capacité d'adaptation remarquable.";
+        } else if (score1 < avgScore - 2) {
+          details += " La capacité d'apprentissage pourrait être développée.";
+        }
+        
+        if (score2 > avgScore + 2) {
+          details += " Fort potentiel de leadership.";
+        } else if (score2 < avgScore - 2) {
+          details += " Les compétences de leadership sont à développer.";
+        }
+        
+        if (score3 > avgScore + 2) {
+          details += " Vision stratégique exceptionnelle.";
+        } else if (score3 < avgScore - 2) {
+          details += " La vision stratégique pourrait être élargie.";
+        }
+      }
+      
+      // If no specific details were added, provide a generic interpretation
+      if (details === "") {
+        if (category === 'veut') {
+          return `${baseInterpretation}. Démontre un niveau équilibré sur l'ensemble des valeurs de l'entreprise.`;
+        } else if (category === 'peut') {
+          return `${baseInterpretation}. Maintient un niveau cohérent de qualité, d'atteinte des objectifs et de résolution de problèmes.`;
+        } else {
+          return `${baseInterpretation}. Montre un équilibre entre capacité d'adaptation, leadership et vision stratégique.`;
+        }
+      }
+      
+      return `${baseInterpretation}.${details}`;
+    }
+    
+    function determinePlayerType(veut, peut, capable) {
+      // Improved algorithm with more precise thresholds and logical flow
+      
+      // Check for D type first (strong misalignment with values)
+      if (veut < 4) {
+        return "D";
+      }
+      
+      // Check for A+ (excellent in all dimensions)
+      if (peut >= 7 && veut >= 7 && capable >= 7) {
+        return "A+";
+      }
+      
+      // Check for A (strong performer with good alignment)
+      if (peut >= 7 && ((veut >= 7 && capable >= 5) || (veut >= 5 && capable >= 7))) {
+        return "A";
+      }
+      
+      // Check for B+ (good balance)
+      if (peut >= 5 && veut >= 5 && capable >= 5) {
+        return "B+";
+      }
+      
+      // Check for B (adequate performer)
+      if (peut >= 5 && (veut >= 4 || capable >= 4)) {
+        return "B";
+      }
+      
+      // Default to C (needs improvement)
+      return "C";
+    }
+    
+    function getPlayerTypeDescription(type) {
+      switch(type) {
+        case "A+": return "Talent exceptionnel";
+        case "A": return "Talent de grande valeur";
+        case "B+": return "Talent prometteur";
+        case "B": return "Talent solide";
+        case "C": return "Talent à accompagner";
+        case "D": return "Désalignement important";
+        default: return "";
+      }
+    }
+    
+    function positionOnQuadrant(playerType, peutAvg, capableAvg, veutAvg) {
+      const marker = document.getElementById('position-marker');
+      
+      // Special case for D type
+      if (playerType === "D") {
+        marker.style.left = "20%";
+        marker.style.top = "80%";
+        marker.style.backgroundColor = "#721c24";
+        return;
+      }
+      
+      // Calculate position
+      // X-axis: Performance (Peut)
+      // Y-axis: weighted combination of Veut and Capable, with greater emphasis on Capable
+      const xPos = (peutAvg / 10) * 100;
+      const yPos = 100 - ((veutAvg * 0.4 + capableAvg * 0.6) / 10) * 100;
+      
+      // Apply position
+      marker.style.left = xPos + "%";
+      marker.style.top = yPos + "%";
+      
+      // Set marker color based on player type
+      const colors = {
+        "A+": "#1e7e34",
+        "A": "#28a745",
+        "B+": "#ffc107",
+        "B": "#fd7e14",
+        "C": "#dc3545"
+      };
+      
+      marker.style.backgroundColor = colors[playerType] || "#721c24";
+    }
+    
+    function getRecommendation(type) {
+      switch(type) {
+        case "A+":
+          return "Talent exceptionnel à retenir absolument. Offrir des défis à la hauteur de son potentiel, des opportunités d'évolution rapide et un parcours personnalisé vers les postes stratégiques. Impliquer cette personne dans les projets d'innovation et de transformation.";
+        case "A":
+          return "Excellent élément à développer et fidéliser. Proposer des responsabilités croissantes, un parcours de développement personnalisé et des opportunités de mentorat. Envisager comme successeur potentiel pour des postes clés à moyen terme.";
+        case "B+":
+          return "Bon potentiel à accompagner. Mettre en place un plan de développement ciblé pour améliorer la performance et l'alignement avec les valeurs de l'entreprise. Définir des objectifs de progression clairs et offrir les formations nécessaires.";
+        case "B":
+          return "Collaborateur fiable. Clarifier les attentes, proposer des formations pour renforcer ses compétences et l'accompagner dans la compréhension des valeurs de l'entreprise. Assigner des projets adaptés à ses forces actuelles tout en l'aidant à développer ses points d'amélioration.";
+        case "C":
+          return "Performance insuffisante nécessitant un suivi rapproché. Établir un plan d'action avec des objectifs précis à court terme, des points d'étape fréquents et un accompagnement intensif. Réévaluer le fit avec le poste actuel dans un délai de 3 à 6 mois.";
+        case "D":
+          return "Employé en désalignement significatif avec les valeurs fondamentales de l'entreprise. Un plan de transition devrait être envisagé car le manque d'alignement avec les valeurs crée un effet détracteur dans l'organisation et limite fortement les possibilités d'évolution.";
+        default:
+          return "";
+      }
+    }
+    
+    function updateActionItems(playerType, veutAvg, peutAvg, capableAvg) {
+      // Define action items based on player type and scores
+              const actionItems = [];
+      
+      // Common action for all (always at least one action)
+      actionItems.push({
+        icon: "",
+        title: "Entretien de feedback",
+        description: "Organiser un entretien détaillé pour partager les résultats de cette évaluation."
+      });
+      
+      // Type-specific actions
+      if (playerType === "A+" || playerType === "A") {
+        actionItems.push({
+          icon: "",
+          title: "Opportunités stratégiques",
+          description: "Impliquer dans des projets stratégiques et de transformation."
+        });
+        
+        actionItems.push({
+          icon: "",
+          title: "Programme de fidélisation",
+          description: "Établir un plan de développement carrière personnalisé incluant des avantages adaptés."
+        });
+      }
+      
+      if (playerType === "B+" || playerType === "B") {
+        actionItems.push({
+          icon: "",
+          title: "Plan de formation",
+          description: "Identifier les compétences clés à développer et proposer des formations adaptées."
+        });
+      }
+      
+      if (playerType === "C") {
+        actionItems.push({
+          icon: "",
+          title: "Plan de progression",
+          description: "Définir des objectifs SMART à court terme avec suivi hebdomadaire."
+        });
+      }
+      
+      if (playerType === "D") {
+        actionItems.push({
+          icon: "",
+          title: "Réorientation",
+          description: "Évaluer les options de réaffectation ou d'accompagnement vers une transition externe."
+        });
+      }
+      
+      // Dimension-specific actions
+      if (veutAvg < 5) {
+        actionItems.push({
+          icon: "",
+          title: "Renforcement de l'alignement",
+          description: "Sessions d'appropriation des valeurs et de la culture d'entreprise."
+        });
+      }
+      
+      if (peutAvg < 5) {
+        actionItems.push({
+          icon: "",
+          title: "Amélioration de la performance",
+          description: "Coaching personnalisé sur les compétences techniques et opérationnelles."
+        });
+      }
+      
+      if (capableAvg >= 7 && (peutAvg < 7 || veutAvg < 7)) {
+        actionItems.push({
+          icon: "",
+          title: "Libération du potentiel",
+          description: "Assigner des projets stimulants pour mobiliser pleinement le potentiel identifié."
+        });
+      }
+      
+      // Render action items (limit to 4 maximum)
+      const actionItemsHTML = actionItems.slice(0, 4).map(item => `
+        <div class="action-item">
+          <div class="action-icon">
+          </div>
+          <div class="action-content">
+            <div class="action-title">${item.title}</div>
+            <div class="action-description">${item.description}</div>
+          </div>
+        </div>
+      `).join('');
+      
+      document.getElementById('action-items-container').innerHTML = actionItemsHTML;
+    }
   </script>
 </body>
 </html>
